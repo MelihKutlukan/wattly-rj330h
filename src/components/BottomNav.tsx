@@ -17,7 +17,7 @@ const TABS = [
 ];
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab }) => (
-  <nav className="sticky bottom-0 z-50 border-t border-stone-200 dark:border-stone-800 bg-white/95 dark:bg-stone-950/95 backdrop-blur-xl pb-safe">
+  <nav className="sticky bottom-0 z-40 border-t border-stone-200 dark:border-stone-800 bg-white/95 dark:bg-stone-950/95 backdrop-blur-xl pb-safe">
     <div className="max-w-md mx-auto px-1 h-[3.5rem] flex items-stretch justify-between">
       {TABS.map(({ id, label, icon: Icon }) => {
         const active = activeTab === id;
