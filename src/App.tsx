@@ -65,6 +65,16 @@ export default function App() {
 
   const isDark = settings.themeMode === 'dark';
 
+  // dark class'ı html elementine yansıt (tema geçişi)
+  useEffect(() => {
+    document.documentElement.dataset.theme = settings.themeMode;
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark, settings.themeMode]);
+
   // ── 3. HANDLERS ───────────────────────────────────────────────────────────
 
   // Onboarding
@@ -189,12 +199,9 @@ export default function App() {
   return (
     <div
       id="app-root"
-      className={`min-h-dvh flex flex-col font-sans ${isDark ? 'bg-slate-950 text-white' : 'bg-[#f8fafc] text-slate-900'}`}
+      className="min-h-dvh flex flex-col font-sans bg-[#faf7f4] text-stone-900 dark:bg-stone-950 dark:text-stone-50"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(99,102,241,0.06),transparent_50%)] pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(16,185,129,0.04),transparent_50%)] pointer-events-none" />
-
-      <div className="w-full max-w-md mx-auto flex-1 flex flex-col relative px-4 pt-6 pb-2 pt-safe">
+      <div className="w-full max-w-md mx-auto flex-1 flex flex-col relative px-4 pb-2 pt-safe" style={{ paddingTop: `max(1.25rem, env(safe-area-inset-top, 0px))` }}>
         <div className="flex-1">
           {showAddConsumption ? (
             <AddConsumption
@@ -272,6 +279,7 @@ export default function App() {
                   consumptions={consumptions}
                   currency={settings.currency}
                   unitPrice={settings.unitPrice}
+                  co2Factor={settings.co2Factor ?? 0.47}
                   onNavigate={(tab) => setActiveTab(tab)}
                 />
               )}

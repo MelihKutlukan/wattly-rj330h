@@ -69,6 +69,7 @@ export interface AppSettings {
   monthlyBudget?: number;
   consumptionTargetKwh?: number;
   githubRepo?: string;
+  co2Factor?: number; // kg CO2 per kWh, default 0.47 (Türkiye ort.)
 }
 
 // ─── Cihaz Tipleri ───────────────────────────────────────────────────────────

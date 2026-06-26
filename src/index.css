@@ -1,26 +1,35 @@
 @import "tailwindcss";
 
+/* ───── Dark mode via .dark class on <html> ───── */
+@variant dark (&:where(.dark, .dark *));
+
 /* ───── Safe-area (notch / home indicator desteği) ───── */
 :root {
-  --sat: env(safe-area-inset-top, 0px);
+  --sat: env(safe-area-inset-top,    0px);
   --sab: env(safe-area-inset-bottom, 0px);
-  --sal: env(safe-area-inset-left, 0px);
-  --sar: env(safe-area-inset-right, 0px);
+  --sal: env(safe-area-inset-left,   0px);
+  --sar: env(safe-area-inset-right,  0px);
 }
 
-.pt-safe  { padding-top:    max(0.5rem, var(--sat)); }
-.pb-safe  { padding-bottom: max(0.5rem, var(--sab)); }
-.pl-safe  { padding-left:   max(0px,    var(--sal)); }
-.pr-safe  { padding-right:  max(0px,    var(--sar)); }
+.pt-safe  { padding-top:    max(0.75rem, var(--sat)); }
+.pb-safe  { padding-bottom: max(0.75rem, var(--sab)); }
+.mb-safe  { margin-bottom:  max(0rem,    var(--sab)); }
+.pl-safe  { padding-left:   max(0px,     var(--sal)); }
+.pr-safe  { padding-right:  max(0px,     var(--sar)); }
+.h-safe-b { height:         max(0.75rem, var(--sab)); }
 
 /* ───── Temel düzeltmeler ───── */
 html, body, #root {
   height: 100%;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
 }
 
-/* min-h-dvh: iOS Safari viewport bug fix */
+/* Prevents overscroll / rubber-band */
+body { overscroll-behavior: none; }
+
+/* min-h-dvh: viewport bug fix */
 .min-h-dvh { min-height: 100dvh; }
 
 /* ───── Animasyonlar ───── */
@@ -40,15 +49,20 @@ html, body, #root {
   from { opacity: 0; transform: scale(0.94); }
   to   { opacity: 1; transform: scale(1);    }
 }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
 @keyframes shimmer {
   from { background-position: -200% center; }
   to   { background-position:  200% center; }
 }
 
-.animate-fade-in       { animation: fadeIn       0.22s ease forwards; }
-.animate-slide-right   { animation: slideInRight 0.22s ease forwards; }
-.animate-slide-left    { animation: slideInLeft  0.22s ease forwards; }
-.animate-scale-in      { animation: scaleIn      0.18s ease forwards; }
+.animate-fade-in     { animation: fadeIn      0.22s ease forwards; }
+.animate-slide-right { animation: slideInRight 0.22s ease forwards; }
+.animate-slide-left  { animation: slideInLeft  0.22s ease forwards; }
+.animate-scale-in    { animation: scaleIn      0.18s ease forwards; }
+.animate-slide-up    { animation: slideUp      0.28s cubic-bezier(0.32,0.72,0,1) forwards; }
 
 /* ───── Tema geçişi (flash yok) ───── */
 *, *::before, *::after {
@@ -56,20 +70,19 @@ html, body, #root {
   transition-duration: 150ms;
   transition-timing-function: ease;
 }
-/* Animasyonlu elementlerde geçişi iptal et */
 button, input, select, textarea { transition-property: none; }
 button { transition: background-color 120ms ease, box-shadow 120ms ease, transform 80ms ease; }
 
-/* ───── Scrollbar gizleme (mobil his) ───── */
+/* ───── Scrollbar gizleme ───── */
 ::-webkit-scrollbar { display: none; }
 * { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ───── Recharts tooltip override (dark theme) ───── */
+/* ───── Recharts tooltip ───── */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: #1e293b !important;
-  border: 1px solid #334155 !important;
+  background: #1c1917 !important;
+  border: 1px solid #44403c !important;
   border-radius: 12px !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
 }
-.recharts-tooltip-label { color: #94a3b8 !important; font-weight: 700; font-size: 11px; }
-.recharts-tooltip-item  { color: #f1f5f9 !important; font-size: 11px; font-weight: 600; }
+.recharts-tooltip-label { color: #a8a29e !important; font-weight: 700; font-size: 11px; }
+.recharts-tooltip-item  { color: #fafaf9 !important; font-size: 11px; font-weight: 600; }

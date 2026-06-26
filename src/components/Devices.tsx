@@ -22,7 +22,7 @@ interface DevicesProps {
   defaultUnitPrice: number;
 }
 
-// ─── Cihaz Hesap Makinesi bileşeni ──────────────────────────────────────────
+// ─── Cihaz Hesap Makinesi ────────────────────────────────────────────────────
 const DeviceCalculator: React.FC<{
   type: string;
   acBtu: 9000|12000|18000|24000;
@@ -35,75 +35,75 @@ const DeviceCalculator: React.FC<{
   unitPrice: number;
   onApplyWatt: (watt: number) => void;
 }> = ({ type, acBtu, setAcBtu, acEnergyClass, setAcEnergyClass, heaterPowerKw, setHeaterPowerKw, currency, unitPrice, onApplyWatt }) => {
-  const [hours, setHours]         = useState(8);
-  const [heaterMin, setHeaterMin] = useState(45);
+  const [hours, setHours]           = useState(8);
+  const [heaterMin, setHeaterMin]   = useState(45);
   const [heaterDays, setHeaterDays] = useState(30);
-  const [watt, setWatt]           = useState(100);
+  const [watt, setWatt]             = useState(100);
 
-  const isAc      = type === 'Klima';
-  const isHeater  = type === 'Şofben';
+  const isAc     = type === 'Klima';
+  const isHeater = type === 'Şofben';
 
-  // Klima hesaplama
   const acHourlyKw    = isAc ? (AC_CONSUMPTION_KW[String(acBtu)]?.[acEnergyClass] ?? 0.6) : 0;
   const acDailyKwh    = acHourlyKw * hours;
   const acMonthlyKwh  = acDailyKwh * 30;
   const acMonthlyCost = acMonthlyKwh * unitPrice;
 
-  // Şofben hesaplama
-  const heaterKw        = heaterPowerKw;
-  const heaterHours     = heaterMin / 60;
-  const heaterSingleKwh = heaterKw * heaterHours;
-  const heaterSingleCost= heaterSingleKwh * unitPrice;
-  const heaterMonKwh    = heaterSingleKwh * heaterDays;
-  const heaterMonCost   = heaterMonKwh * unitPrice;
+  const heaterKw         = heaterPowerKw;
+  const heaterHours      = heaterMin / 60;
+  const heaterSingleKwh  = heaterKw * heaterHours;
+  const heaterSingleCost = heaterSingleKwh * unitPrice;
+  const heaterMonKwh     = heaterSingleKwh * heaterDays;
+  const heaterMonCost    = heaterMonKwh * unitPrice;
 
-  // Generic hesaplama
   const genDailyKwh    = (watt / 1000) * hours;
   const genMonthlyKwh  = genDailyKwh * 30;
   const genMonthlyCost = genMonthlyKwh * unitPrice;
 
   const fmtTL = (v: number) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(v) + ' ' + currency;
 
+  const inputCls  = "w-full h-8 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-2 text-[10px] text-stone-900 dark:text-stone-100 focus:outline-none font-mono";
+
   const resultRow = (label: string, kwh: number, cost: number) => (
-    <div key={label} className="flex justify-between items-center py-1.5 border-b border-slate-800/50">
-      <span className="text-[10px] text-slate-400 font-bold">{label}</span>
+    <div key={label} className="flex justify-between items-center py-1.5 border-b border-stone-200 dark:border-stone-800/50">
+      <span className="text-[10px] text-stone-500 font-bold">{label}</span>
       <div className="text-right">
-        <span className="text-xs font-black text-indigo-400 font-mono">{kwh.toFixed(2)} kWh</span>
-        <span className="text-[10px] text-emerald-400 font-mono ml-2">{fmtTL(cost)}</span>
+        <span className="text-xs font-black text-amber-500 font-mono">{kwh.toFixed(2)} kWh</span>
+        <span className="text-[10px] text-emerald-500 font-mono ml-2">{fmtTL(cost)}</span>
       </div>
     </div>
   );
 
   return (
-    <div className="bg-slate-950/60 border border-indigo-500/20 rounded-2xl p-4 space-y-4">
+    <div className="bg-stone-50 dark:bg-stone-950/60 border border-amber-500/20 rounded-2xl p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+        <span className="text-xs font-bold text-amber-500 flex items-center gap-1.5">
           <Calculator size={13} /> Tüketim Simülatörü
         </span>
-        <span className="text-[9px] text-slate-500">Birim: {unitPrice.toFixed(2)} TL/kWh</span>
+        <span className="text-[9px] text-stone-400">Birim: {unitPrice.toFixed(2)} TL/kWh</span>
       </div>
 
       {isAc && (
         <>
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold block">BTU</label>
-              <select value={acBtu} onChange={e => setAcBtu(+e.target.value as any)}
-                className="w-full h-8 bg-slate-800 border border-slate-700 rounded-lg px-2 text-[10px] text-white focus:outline-none font-mono">
+              <label className="text-[10px] text-stone-500 font-bold block">BTU</label>
+              <select value={acBtu} onChange={e => setAcBtu(+e.target.value as any)} className={inputCls}>
                 {[9000,12000,18000,24000].map(b => <option key={b} value={b}>{b/1000}K</option>)}
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold block">Enerji Sınıfı</label>
-              <select value={acEnergyClass} onChange={e => setAcEnergyClass(e.target.value as any)}
-                className="w-full h-8 bg-slate-800 border border-slate-700 rounded-lg px-2 text-[10px] text-white focus:outline-none font-mono">
+              <label className="text-[10px] text-stone-500 font-bold block">Enerji Sınıfı</label>
+              <select value={acEnergyClass} onChange={e => setAcEnergyClass(e.target.value as any)} className={inputCls}>
                 {['A+','A++','A+++'].map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold flex justify-between"><span>Günlük Saat</span><span className="text-indigo-400">{hours}s</span></label>
+              <label className="text-[10px] text-stone-500 font-bold flex justify-between">
+                <span>Günlük Saat</span>
+                <span className="text-amber-500">{hours}s</span>
+              </label>
               <input type="range" min={1} max={24} value={hours} onChange={e => setHours(+e.target.value)}
-                className="w-full accent-indigo-500" />
+                className="w-full accent-amber-500" />
             </div>
           </div>
           <div className="space-y-1">
@@ -112,10 +112,10 @@ const DeviceCalculator: React.FC<{
             {resultRow('Aylık (30 gün)', acMonthlyKwh, acMonthlyCost)}
           </div>
           <button type="button" onClick={() => onApplyWatt(Math.round(acHourlyKw * 1000))}
-            className="w-full h-8 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/20 text-indigo-300 text-[10px] font-bold rounded-lg transition-all">
+            className="w-full h-8 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold rounded-lg transition-all">
             Ortalama Gücü Uygula ({Math.round(acHourlyKw * 1000)} W)
           </button>
-          <p className="text-[9px] text-slate-500 text-center">*İnverter klimanın kompresör ~%60 yükte çalışması baz alınmıştır.</p>
+          <p className="text-[9px] text-stone-400 text-center">*İnverter klimanın kompresör ~%60 yükte çalışması baz alınmıştır.</p>
         </>
       )}
 
@@ -123,40 +123,39 @@ const DeviceCalculator: React.FC<{
         <>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold block">Güç (kW)</label>
-              <select value={heaterPowerKw} onChange={e => setHeaterPowerKw(+e.target.value as any)}
-                className="w-full h-8 bg-slate-800 border border-slate-700 rounded-lg px-2 text-[10px] text-white focus:outline-none font-mono">
+              <label className="text-[10px] text-stone-500 font-bold block">Güç (kW)</label>
+              <select value={heaterPowerKw} onChange={e => setHeaterPowerKw(+e.target.value as any)} className={inputCls}>
                 {[3,4,5].map(p => <option key={p} value={p}>{p} kW</option>)}
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold block">Aylık Kullanım</label>
-              <div className="flex items-center gap-1 h-8 bg-slate-800 border border-slate-700 rounded-lg px-2">
+              <label className="text-[10px] text-stone-500 font-bold block">Aylık Kullanım</label>
+              <div className="flex items-center gap-1 h-8 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-2">
                 <input type="number" min={1} max={30} value={heaterDays} onChange={e => setHeaterDays(+e.target.value)}
-                  className="w-full bg-transparent text-[10px] text-white focus:outline-none font-mono" />
-                <span className="text-[9px] text-slate-500">gün</span>
+                  className="w-full bg-transparent text-[10px] text-stone-900 dark:text-stone-100 focus:outline-none font-mono" />
+                <span className="text-[9px] text-stone-400">gün</span>
               </div>
             </div>
           </div>
           <div className="space-y-1">
             <div className="flex justify-between items-center mb-1">
-              <label className="text-[10px] text-slate-400 font-bold">Kullanım Süresi</label>
-              <span className="text-[10px] text-indigo-400 font-bold">
+              <label className="text-[10px] text-stone-500 font-bold">Kullanım Süresi</label>
+              <span className="text-[10px] text-amber-500 font-bold">
                 {heaterMin >= 60 ? `${Math.floor(heaterMin/60)}s ${heaterMin%60 > 0 ? heaterMin%60+'dk' : ''}` : `${heaterMin}dk`}
               </span>
             </div>
             <input type="range" min={5} max={180} step={5} value={heaterMin} onChange={e => setHeaterMin(+e.target.value)}
-              className="w-full accent-indigo-500" />
+              className="w-full accent-amber-500" />
           </div>
           <div className="space-y-1">
             {resultRow('Banyo Başı', heaterSingleKwh, heaterSingleCost)}
             {resultRow(`Aylık (${heaterDays} gün)`, heaterMonKwh, heaterMonCost)}
           </div>
           <button type="button" onClick={() => onApplyWatt(heaterPowerKw * 1000)}
-            className="w-full h-8 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/20 text-indigo-300 text-[10px] font-bold rounded-lg transition-all">
+            className="w-full h-8 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold rounded-lg transition-all">
             Gücü Uygula ({heaterPowerKw * 1000} W)
           </button>
-          <p className="text-[9px] text-slate-500 text-center">*Anlık su ısıtıcı tam güçte çalışmaktadır.</p>
+          <p className="text-[9px] text-stone-400 text-center">*Anlık su ısıtıcı tam güçte çalışmaktadır.</p>
         </>
       )}
 
@@ -164,14 +163,16 @@ const DeviceCalculator: React.FC<{
         <>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold block">Güç (Watt)</label>
-              <input type="number" min={1} value={watt} onChange={e => setWatt(+e.target.value)}
-                className="w-full h-8 bg-slate-800 border border-slate-700 rounded-lg px-3 text-[10px] text-white focus:outline-none font-mono" />
+              <label className="text-[10px] text-stone-500 font-bold block">Güç (Watt)</label>
+              <input type="number" min={1} value={watt} onChange={e => setWatt(+e.target.value)} className={inputCls} />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold flex justify-between"><span>Günlük Saat</span><span className="text-indigo-400">{hours}s</span></label>
+              <label className="text-[10px] text-stone-500 font-bold flex justify-between">
+                <span>Günlük Saat</span>
+                <span className="text-amber-500">{hours}s</span>
+              </label>
               <input type="range" min={0.5} max={24} step={0.5} value={hours} onChange={e => setHours(+e.target.value)}
-                className="w-full accent-indigo-500 mt-2" />
+                className="w-full accent-amber-500 mt-2" />
             </div>
           </div>
           <div className="space-y-1">
@@ -180,7 +181,7 @@ const DeviceCalculator: React.FC<{
             {resultRow('Aylık (30 gün)', genMonthlyKwh, genMonthlyCost)}
           </div>
           <button type="button" onClick={() => onApplyWatt(watt)}
-            className="w-full h-8 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/20 text-indigo-300 text-[10px] font-bold rounded-lg transition-all">
+            className="w-full h-8 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold rounded-lg transition-all">
             Bu Değeri Güç Alanına Uygula ({watt} W)
           </button>
         </>
@@ -189,7 +190,7 @@ const DeviceCalculator: React.FC<{
   );
 };
 
-// ─── Ana Cihazlar Bileşeni ────────────────────────────────────────────────────
+// ─── Ana Cihazlar Bileşeni ───────────────────────────────────────────────────
 export const Devices: React.FC<DevicesProps> = ({
   rooms, devices, consumptions, currency,
   onAddDevice, onEditDevice, onDeleteDevice,
@@ -209,7 +210,6 @@ export const Devices: React.FC<DevicesProps> = ({
   const [typeFilter, setTypeFilter]   = useState('ALL');
   const [sortBy, setSortBy]           = useState<'CONSUMPTION'|'NAME'|'NEWEST'>('CONSUMPTION');
 
-  // Form state
   const [name, setName]               = useState('');
   const [roomId, setRoomId]           = useState('');
   const [type, setType]               = useState('Televizyon');
@@ -222,11 +222,10 @@ export const Devices: React.FC<DevicesProps> = ({
   const [heaterPowerKw, setHeaterPowerKw] = useState<3|4|5>(4);
   const [formError, setFormError]     = useState('');
 
-  // Tüketim düzenleme state
-  const [editConsDate, setEditConsDate]         = useState('');
-  const [editConsKwh, setEditConsKwh]           = useState('');
-  const [editConsUnitPrice, setEditConsUnitPrice] = useState('');
-  const [editConsNote, setEditConsNote]         = useState('');
+  const [editConsDate, setEditConsDate]             = useState('');
+  const [editConsKwh, setEditConsKwh]               = useState('');
+  const [editConsUnitPrice, setEditConsUnitPrice]   = useState('');
+  const [editConsNote, setEditConsNote]             = useState('');
 
   const curMonStr = new Date().toISOString().substring(0, 7);
 
@@ -264,7 +263,7 @@ export const Devices: React.FC<DevicesProps> = ({
     if (!name.trim()) { setFormError('Cihaz adı boş bırakılamaz.'); return null; }
     const w = averageWatt ? parseFloat(averageWatt) : undefined;
     if (w !== undefined && (isNaN(w) || w < 0)) { setFormError('Geçerli bir Watt değeri girin.'); return null; }
-    return { w, aWatt: w };
+    return { w };
   };
 
   const handleSaveAdd = (e: React.FormEvent) => {
@@ -292,7 +291,6 @@ export const Devices: React.FC<DevicesProps> = ({
     setShowEditModal(false);
   };
 
-  // Tüketim düzenleme
   const openEditCons = (c: Consumption) => {
     setEditCons(c);
     setEditConsDate(c.date);
@@ -311,7 +309,6 @@ export const Devices: React.FC<DevicesProps> = ({
     setEditCons(null);
   };
 
-  // Filtreleme
   const filtered = devices.filter(d => {
     const q = searchQuery.toLowerCase();
     return (d.name.toLowerCase().includes(q) || (d.smartPlugName || '').toLowerCase().includes(q) || (d.note || '').toLowerCase().includes(q))
@@ -325,167 +322,178 @@ export const Devices: React.FC<DevicesProps> = ({
     return getStats(b.id).kwh - getStats(a.id).kwh;
   });
 
-  // Ortak form JSX
+  const inputCls = "w-full h-11 bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl px-4 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-amber-500";
+
+  // Bottom sheet device form
   const DeviceForm = ({ onSubmit, title }: { onSubmit: (e: React.FormEvent) => void; title: string }) => (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-md animate-fade-in">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-md space-y-4 animate-scale-in relative max-h-[92vh] overflow-y-auto">
-        <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={20} /></button>
-        <h2 className="text-base font-black text-white">{title}</h2>
-
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs text-slate-400 font-bold">Cihaz Adı</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Örn: Arçelik Klima"
-              className="w-full h-11 bg-slate-800 border border-slate-700 rounded-xl px-4 text-xs text-white focus:outline-none focus:border-indigo-500" />
+    <div className="fixed inset-0 z-50 flex flex-col justify-end animate-fade-in"
+      onClick={() => { setShowAddModal(false); setShowEditModal(false); }}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="relative bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
+        onClick={e => e.stopPropagation()}>
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
+        </div>
+        <div className="px-5 pb-6 space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-base font-black text-stone-900 dark:text-stone-50">{title}</h2>
+            <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
+              className="p-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400">
+              <X size={18} />
+            </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-400 font-bold">Oda</label>
-              <select value={roomId} onChange={e => setRoomId(e.target.value)}
-                className="w-full h-11 bg-slate-800 border border-slate-700 rounded-xl px-3 text-xs text-white focus:outline-none focus:border-indigo-500">
-                {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-              </select>
+              <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Cihaz Adı</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Örn: Arçelik Klima"
+                className={inputCls} />
             </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Oda</label>
+                <select value={roomId} onChange={e => setRoomId(e.target.value)} className={inputCls}>
+                  {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Cihaz Türü</label>
+                <select value={type} onChange={e => { setType(e.target.value); setAverageWatt(String(DEVICE_TYPES.find(dt => dt.id === e.target.value)?.defaultWatt || '')); }}
+                  className={inputCls}>
+                  {DEVICE_TYPES.map(dt => <option key={dt.id} value={dt.id}>{dt.label}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Akıllı Priz <span className="text-stone-400">(opt.)</span></label>
+                <input type="text" value={smartPlugName} onChange={e => setSmartPlugName(e.target.value)} placeholder="TUYA_1"
+                  className={inputCls} />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Ortalama Güç (W)</label>
+                <input type="number" value={averageWatt} onChange={e => setAverageWatt(e.target.value)} placeholder="Örn: 1500"
+                  className={inputCls + " font-mono"} />
+              </div>
+            </div>
+
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-400 font-bold">Cihaz Türü</label>
-              <select value={type} onChange={e => { setType(e.target.value); setAverageWatt(String(DEVICE_TYPES.find(dt => dt.id === e.target.value)?.defaultWatt || '')); }}
-                className="w-full h-11 bg-slate-800 border border-slate-700 rounded-xl px-3 text-xs text-white focus:outline-none focus:border-indigo-500">
-                {DEVICE_TYPES.map(dt => <option key={dt.id} value={dt.id}>{dt.label}</option>)}
-              </select>
+              <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Not</label>
+              <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Ek notlar..."
+                className="w-full h-14 bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl p-3 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-amber-500 resize-none" />
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-xs text-slate-400 font-bold">Akıllı Priz Adı <span className="text-slate-600">(opt.)</span></label>
-              <input type="text" value={smartPlugName} onChange={e => setSmartPlugName(e.target.value)} placeholder="TUYA_1"
-                className="w-full h-11 bg-slate-800 border border-slate-700 rounded-xl px-4 text-xs text-white focus:outline-none focus:border-indigo-500" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs text-slate-400 font-bold">Ortalama Güç (W)</label>
-              <input type="number" value={averageWatt} onChange={e => setAverageWatt(e.target.value)} placeholder="Örn: 1500"
-                className="w-full h-11 bg-slate-800 border border-slate-700 rounded-xl px-4 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono" />
-            </div>
-          </div>
+            <button type="button" onClick={() => setShowCalc(v => !v)}
+              className="w-full h-9 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all">
+              <Calculator size={12} />
+              {showCalc ? 'Simülatörü Gizle' : 'Tüketim Simülatörü Aç'}
+              {showCalc ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
 
-          <div className="space-y-1.5">
-            <label className="text-xs text-slate-400 font-bold">Not</label>
-            <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Ek notlar..."
-              className="w-full h-14 bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 resize-none" />
-          </div>
+            {showCalc && (
+              <DeviceCalculator
+                type={type} acBtu={acBtu} setAcBtu={setAcBtu}
+                acEnergyClass={acEnergyClass} setAcEnergyClass={setAcEnergyClass}
+                heaterPowerKw={heaterPowerKw} setHeaterPowerKw={setHeaterPowerKw}
+                currency={currency} unitPrice={defaultUnitPrice}
+                onApplyWatt={w => setAverageWatt(String(w))}
+              />
+            )}
 
-          {/* Simülatör toggle */}
-          <button type="button" onClick={() => setShowCalc(v => !v)}
-            className="w-full h-9 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all">
-            <Calculator size={12} />
-            {showCalc ? 'Simülatörü Gizle' : 'Tüketim Simülatörü Aç'}
-            {showCalc ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
+            {formError && <p className="text-[10px] text-rose-500 font-semibold">{formError}</p>}
 
-          {showCalc && (
-            <DeviceCalculator
-              type={type} acBtu={acBtu} setAcBtu={setAcBtu}
-              acEnergyClass={acEnergyClass} setAcEnergyClass={setAcEnergyClass}
-              heaterPowerKw={heaterPowerKw} setHeaterPowerKw={setHeaterPowerKw}
-              currency={currency} unitPrice={defaultUnitPrice}
-              onApplyWatt={w => setAverageWatt(String(w))}
-            />
-          )}
-
-          {formError && <p className="text-[10px] text-rose-400 font-semibold">{formError}</p>}
-
-          <button type="submit"
-            className="w-full h-11 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition-colors shadow-[0_4px_12px_rgba(99,102,241,0.25)]">
-            Kaydet
-          </button>
-        </form>
+            <button type="submit"
+              className="w-full h-11 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs transition-colors shadow-[0_4px_12px_rgba(245,158,11,0.25)]">
+              Kaydet
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
 
-  // Cihaz Detay Görünümü
+  // Cihaz Detay
   if (deviceDetailId) {
     const dev = devices.find(d => d.id === deviceDetailId);
     if (!dev) { setDeviceDetailId(null); return null; }
-    const dRoom  = rooms.find(r => r.id === dev.roomId);
-    const dStats = getStats(dev.id);
-    const dCons  = [...consumptions.filter(c => c.deviceId === dev.id)].sort((a, b) => b.createdAt - a.createdAt);
+    const dRoom    = rooms.find(r => r.id === dev.roomId);
+    const dStats   = getStats(dev.id);
+    const dCons    = [...consumptions.filter(c => c.deviceId === dev.id)].sort((a, b) => b.createdAt - a.createdAt);
     const typeInfo = DEVICE_TYPES.find(dt => dt.id === dev.type);
 
     return (
       <div className="space-y-5 pb-24 animate-fade-in">
         <button onClick={() => setDeviceDetailId(null)}
-          className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl transition-all">
+          className="flex items-center gap-2 text-xs font-bold text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-3 py-1.5 rounded-xl transition-all">
           <ArrowLeft size={14} /> Geri
         </button>
 
-        {/* Başlık kartı */}
-        <div className="p-5 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+        <div className="p-5 rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900/60 space-y-4">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-500/10 border border-indigo-500/20">
-                <IconRenderer name={typeInfo?.icon || 'Radio'} size={22} className="text-indigo-400" />
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-500/10 border border-amber-500/20">
+                <IconRenderer name={typeInfo?.icon || 'Radio'} size={22} className="text-amber-500" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h2 className="text-lg font-black text-white">{dev.name}</h2>
+                  <h2 className="text-lg font-black text-stone-900 dark:text-stone-50">{dev.name}</h2>
                   {dev.isFavorite && <Star size={13} className="text-amber-400 fill-amber-400" />}
                 </div>
                 <p className="text-xs font-medium" style={{ color: dRoom?.color }}>{dRoom?.name || 'Oda'}</p>
               </div>
             </div>
             <button onClick={() => onToggleActive(dev.id)}
-              className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all ${dev.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>
+              className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all ${dev.isActive ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-stone-100 dark:bg-stone-800 text-stone-400 border-stone-200 dark:border-stone-700'}`}>
               {dev.isActive ? <><ToggleRight size={16} /> Aktif</> : <><ToggleLeft size={16} /> Pasif</>}
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-800/60">
+          <div className="grid grid-cols-2 gap-4 pt-3 border-t border-stone-100 dark:border-stone-800/60">
             <div>
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Bu Ayki Tüketim</span>
-              <span className="text-base font-black text-indigo-400 font-mono">{dStats.kwh.toFixed(1)} kWh</span>
+              <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">Bu Ayki Tüketim</span>
+              <span className="text-base font-black text-amber-500 font-mono">{dStats.kwh.toFixed(1)} kWh</span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Tahmini Maliyet</span>
-              <span className="text-base font-black text-emerald-400 font-mono">
+              <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">Tahmini Maliyet</span>
+              <span className="text-base font-black text-emerald-600 dark:text-emerald-400 font-mono">
                 {new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(dStats.cost)} {currency}
               </span>
             </div>
           </div>
 
           {(dev.smartPlugName || dev.averageWatt || dev.note) && (
-            <div className="bg-slate-950/40 border border-slate-800 rounded-2xl p-3 text-xs space-y-1.5">
-              {dev.smartPlugName && <div className="flex justify-between"><span className="text-slate-500">Akıllı Priz:</span><span className="text-blue-300 font-mono font-bold">{dev.smartPlugName}</span></div>}
-              {dev.averageWatt   && <div className="flex justify-between"><span className="text-slate-500">Ortalama Güç:</span><span className="text-emerald-300 font-mono font-bold">{dev.averageWatt} W</span></div>}
-              {dev.note && <p className="text-slate-400 italic pt-1 border-t border-slate-800/50">{dev.note}</p>}
+            <div className="bg-stone-50 dark:bg-stone-950/40 border border-stone-200 dark:border-stone-800 rounded-2xl p-3 text-xs space-y-1.5">
+              {dev.smartPlugName && <div className="flex justify-between"><span className="text-stone-400">Akıllı Priz:</span><span className="text-blue-500 font-mono font-bold">{dev.smartPlugName}</span></div>}
+              {dev.averageWatt   && <div className="flex justify-between"><span className="text-stone-400">Ortalama Güç:</span><span className="text-emerald-500 font-mono font-bold">{dev.averageWatt} W</span></div>}
+              {dev.note && <p className="text-stone-400 italic pt-1 border-t border-stone-200 dark:border-stone-800/50">{dev.note}</p>}
             </div>
           )}
         </div>
 
-        {/* Tüketim Geçmişi */}
         <div className="space-y-3">
-          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Tüketim Geçmişi ({dCons.length})</h3>
+          <h3 className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Tüketim Geçmişi ({dCons.length})</h3>
           {dCons.length > 0 ? (
             <div className="space-y-2">
               {dCons.map(entry => (
-                <div key={entry.id} className="flex justify-between items-center bg-slate-900/40 border border-slate-800/60 rounded-2xl p-3.5">
+                <div key={entry.id} className="flex justify-between items-center bg-white dark:bg-stone-900/40 border border-stone-200 dark:border-stone-800/60 rounded-2xl p-3.5">
                   <div className="space-y-0.5 min-w-0">
-                    <h4 className="text-xs font-bold text-white">{new Date(entry.date).toLocaleDateString('tr-TR', { day:'2-digit', month:'long', year:'numeric' })}</h4>
-                    {entry.note && <p className="text-[10px] text-slate-500 italic truncate">{entry.note}</p>}
+                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">{new Date(entry.date).toLocaleDateString('tr-TR', { day:'2-digit', month:'long', year:'numeric' })}</h4>
+                    {entry.note && <p className="text-[10px] text-stone-400 italic truncate">{entry.note}</p>}
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right font-mono">
-                      <div className="text-xs font-bold text-white">{entry.kwh.toFixed(2)} kWh</div>
-                      <div className="text-[10px] text-slate-400">{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(entry.totalCost)} {currency}</div>
+                      <div className="text-xs font-bold text-stone-900 dark:text-stone-100">{entry.kwh.toFixed(2)} kWh</div>
+                      <div className="text-[10px] text-stone-400">{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(entry.totalCost)} {currency}</div>
                     </div>
                     <div className="flex gap-1">
                       <button onClick={() => openEditCons(entry)}
-                        className="p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/10 transition-all">
+                        className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/10 transition-all">
                         <Edit2 size={11} />
                       </button>
                       <button onClick={() => onDeleteConsumption(entry.id)}
-                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/10">
+                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/10">
                         <Trash2 size={11} />
                       </button>
                     </div>
@@ -494,55 +502,75 @@ export const Devices: React.FC<DevicesProps> = ({
               ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-400 bg-slate-900/10 p-4 border border-dashed border-slate-800 rounded-2xl text-center">Henüz tüketim kaydı girilmemiş.</p>
+            <p className="text-xs text-stone-400 bg-stone-50 dark:bg-stone-900/10 p-4 border border-dashed border-stone-300 dark:border-stone-800 rounded-2xl text-center">Henüz tüketim kaydı girilmemiş.</p>
           )}
         </div>
 
-        {/* Tüketim Düzenleme Modal */}
+        {/* Tüketim Düzenleme — bottom sheet */}
         {editCons && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-md animate-fade-in">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-md space-y-4 animate-scale-in">
-              <div className="flex justify-between items-center">
-                <h2 className="text-base font-black text-white">Tüketim Kaydını Düzenle</h2>
-                <button onClick={() => setEditCons(null)} className="text-slate-400 hover:text-white"><X size={18} /></button>
+          <div className="fixed inset-0 z-50 flex flex-col justify-end animate-fade-in"
+            onClick={() => setEditCons(null)}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <div className="relative bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[85vh] pb-safe"
+              onClick={e => e.stopPropagation()}>
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
               </div>
-              <form onSubmit={handleSaveEditCons} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs text-slate-400 font-bold flex items-center gap-1"><Calendar size={11} className="text-indigo-400" /> Tarih</label>
-                  <input type="date" value={editConsDate} onChange={e => setEditConsDate(e.target.value)}
-                    className="w-full h-11 bg-slate-800 border border-slate-700 rounded-xl px-4 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono" />
+              <div className="px-5 pb-6 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-base font-black text-stone-900 dark:text-stone-50">Tüketim Kaydını Düzenle</h2>
+                  <button onClick={() => setEditCons(null)} className="p-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-500">
+                    <X size={18} />
+                  </button>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <form onSubmit={handleSaveEditCons} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-slate-400 font-bold flex items-center gap-1"><Zap size={11} className="text-indigo-400" /> kWh</label>
-                    <input type="number" step="0.01" min="0.01" value={editConsKwh} onChange={e => setEditConsKwh(e.target.value)}
-                      className="w-full h-11 bg-slate-800 border border-slate-700 rounded-xl px-4 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono" />
+                    <label className="text-xs text-stone-500 dark:text-stone-400 font-bold flex items-center gap-1">
+                      <Calendar size={11} className="text-amber-500" /> Tarih
+                    </label>
+                    <input type="date" value={editConsDate} onChange={e => setEditConsDate(e.target.value)}
+                      className={inputCls + " font-mono"} />
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-stone-500 dark:text-stone-400 font-bold flex items-center gap-1">
+                        <Zap size={11} className="text-amber-500" /> kWh
+                      </label>
+                      <input type="number" step="0.01" min="0.01" value={editConsKwh} onChange={e => setEditConsKwh(e.target.value)}
+                        className={inputCls + " font-mono"} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-stone-500 dark:text-stone-400 font-bold flex items-center gap-1">
+                        <Coins size={11} className="text-emerald-500" /> TL/kWh
+                      </label>
+                      <input type="number" step="0.01" min="0.01" value={editConsUnitPrice} onChange={e => setEditConsUnitPrice(e.target.value)}
+                        className={inputCls + " font-mono"} />
+                    </div>
+                  </div>
+                  {editConsKwh && editConsUnitPrice && (
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-center">
+                      <span className="text-xs font-black text-stone-900 dark:text-stone-50 font-mono">
+                        {(parseFloat(editConsKwh) * parseFloat(editConsUnitPrice)).toFixed(2)} {currency}
+                      </span>
+                    </div>
+                  )}
                   <div className="space-y-1.5">
-                    <label className="text-xs text-slate-400 font-bold flex items-center gap-1"><Coins size={11} className="text-emerald-400" /> TL/kWh</label>
-                    <input type="number" step="0.01" min="0.01" value={editConsUnitPrice} onChange={e => setEditConsUnitPrice(e.target.value)}
-                      className="w-full h-11 bg-slate-800 border border-slate-700 rounded-xl px-4 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono" />
+                    <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Not</label>
+                    <input type="text" value={editConsNote} onChange={e => setEditConsNote(e.target.value)}
+                      className={inputCls} />
                   </div>
-                </div>
-                {editConsKwh && editConsUnitPrice && (
-                  <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-3 text-center">
-                    <span className="text-xs font-black text-white font-mono">
-                      {(parseFloat(editConsKwh) * parseFloat(editConsUnitPrice)).toFixed(2)} {currency}
-                    </span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button type="button" onClick={() => setEditCons(null)}
+                      className="h-10 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 font-bold rounded-xl text-xs">
+                      İptal
+                    </button>
+                    <button type="submit"
+                      className="h-10 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs">
+                      Kaydet
+                    </button>
                   </div>
-                )}
-                <div className="space-y-1.5">
-                  <label className="text-xs text-slate-400 font-bold">Not</label>
-                  <input type="text" value={editConsNote} onChange={e => setEditConsNote(e.target.value)}
-                    className="w-full h-10 bg-slate-800 border border-slate-700 rounded-xl px-4 text-xs text-white focus:outline-none focus:border-indigo-500" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <button type="button" onClick={() => setEditCons(null)}
-                    className="h-10 bg-slate-800 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs">İptal</button>
-                  <button type="submit"
-                    className="h-10 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs">Kaydet</button>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           </div>
         )}
@@ -554,21 +582,21 @@ export const Devices: React.FC<DevicesProps> = ({
     <div className="space-y-5 pb-24 animate-fade-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-black text-white">Cihazlar</h1>
-          <p className="text-xs text-slate-400">Elektrikli cihazları yönetin</p>
+          <h1 className="text-2xl font-black text-stone-900 dark:text-stone-50">Cihazlar</h1>
+          <p className="text-xs text-stone-400">Elektrikli cihazları yönetin</p>
         </div>
         <button onClick={handleOpenAdd}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 h-10 rounded-2xl flex items-center gap-1.5 shadow-[0_4px_12px_rgba(99,102,241,0.3)] transition-all">
+          className="bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold px-4 h-10 rounded-2xl flex items-center gap-1.5 shadow-[0_4px_12px_rgba(245,158,11,0.3)] transition-all">
           <Plus size={15} /> Cihaz Ekle
         </button>
       </div>
 
       {/* Arama & Filtreler */}
-      <div className="space-y-3 bg-slate-900/40 border border-slate-800 p-4 rounded-2xl">
+      <div className="space-y-3 bg-white dark:bg-stone-900/40 border border-stone-200 dark:border-stone-800 p-4 rounded-2xl">
         <div className="relative">
           <input type="text" placeholder="Cihaz ara..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-            className="w-full h-10 bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-500" />
-          <Search size={13} className="absolute left-3 top-3.5 text-slate-500" />
+            className="w-full h-10 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl pl-9 pr-4 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-amber-500 placeholder-stone-400" />
+          <Search size={13} className="absolute left-3 top-3.5 text-stone-400" />
         </div>
         <div className="grid grid-cols-3 gap-2">
           {[
@@ -577,7 +605,7 @@ export const Devices: React.FC<DevicesProps> = ({
             { value: sortBy,    onChange: (v: any) => setSortBy(v), options: [{ value: 'CONSUMPTION', label: 'En Çok Tüketen' }, { value: 'NAME', label: 'İsim (A-Z)' }, { value: 'NEWEST', label: 'En Yeni' }] },
           ].map((sel, i) => (
             <select key={i} value={sel.value} onChange={e => sel.onChange(e.target.value)}
-              className="w-full h-9 bg-slate-800 border border-slate-700 rounded-lg px-2 text-[10px] font-bold text-slate-300 focus:outline-none">
+              className="w-full h-9 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-2 text-[10px] font-bold text-stone-600 dark:text-stone-300 focus:outline-none">
               {sel.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           ))}
@@ -593,19 +621,19 @@ export const Devices: React.FC<DevicesProps> = ({
             const icon  = DEVICE_TYPES.find(dt => dt.id === device.type)?.icon || 'Radio';
             return (
               <div key={device.id} onClick={() => setDeviceDetailId(device.id)}
-                className="bg-slate-900/40 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/60 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer active:scale-[0.99]">
+                className="bg-white dark:bg-stone-900/40 border border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-900/60 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer active:scale-[0.99]">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-slate-800/80 border border-slate-700/50 shrink-0">
-                    <IconRenderer name={icon} size={19} className="text-indigo-400" />
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-amber-500/10 border border-amber-500/10 shrink-0">
+                    <IconRenderer name={icon} size={19} className="text-amber-500" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <h3 className="text-xs font-bold text-white truncate">{device.name}</h3>
+                      <h3 className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">{device.name}</h3>
                       <button type="button" onClick={e => { e.stopPropagation(); onToggleFavorite(device.id); }}>
-                        <Star size={11} className={device.isFavorite ? 'text-amber-400 fill-amber-400' : 'text-slate-600 hover:text-amber-400'} />
+                        <Star size={11} className={device.isFavorite ? 'text-amber-400 fill-amber-400' : 'text-stone-300 dark:text-stone-600 hover:text-amber-400'} />
                       </button>
                     </div>
-                    <p className="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                    <p className="text-[10px] text-stone-400 flex items-center gap-1.5 mt-0.5">
                       <span style={{ color: r?.color }}>{r?.name}</span>
                       <span>•</span>
                       <span>{device.type}</span>
@@ -614,16 +642,16 @@ export const Devices: React.FC<DevicesProps> = ({
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="text-right font-mono">
-                    <span className="text-xs font-bold text-indigo-400 block">{stats.kwh.toFixed(1)} kWh</span>
-                    <span className="text-[9px] text-slate-400">{new Intl.NumberFormat('tr-TR').format(stats.cost)} {currency}</span>
+                    <span className="text-xs font-bold text-amber-500 block">{stats.kwh.toFixed(1)} kWh</span>
+                    <span className="text-[9px] text-stone-400">{new Intl.NumberFormat('tr-TR').format(stats.cost)} {currency}</span>
                   </div>
                   <div className="flex gap-1">
                     <button onClick={e => { e.stopPropagation(); setSelectedDevice(device); fillForm(device); setShowEditModal(true); }}
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/20">
+                      className="p-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-500 dark:text-stone-300 border border-stone-200 dark:border-stone-700/20">
                       <Edit2 size={11} />
                     </button>
                     <button onClick={e => { e.stopPropagation(); setSelectedDevice(device); setShowDeleteModal(true); }}
-                      className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/10">
+                      className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/10">
                       <Trash2 size={11} />
                     </button>
                   </div>
@@ -633,12 +661,12 @@ export const Devices: React.FC<DevicesProps> = ({
           })}
         </div>
       ) : (
-        <div className="bg-slate-900/20 border border-dashed border-slate-800 rounded-3xl p-10 text-center space-y-4">
-          <Zap size={32} className="text-slate-700 mx-auto animate-pulse" />
-          <h3 className="font-bold text-white text-sm">Cihaz Bulunamadı</h3>
-          <p className="text-xs text-slate-400 max-w-xs mx-auto">Arama kriterleriyle eşleşen cihaz yok veya henüz cihaz eklemediniz.</p>
+        <div className="bg-stone-50 dark:bg-stone-900/20 border border-dashed border-stone-300 dark:border-stone-800 rounded-3xl p-10 text-center space-y-4">
+          <Zap size={32} className="text-stone-300 dark:text-stone-700 mx-auto animate-pulse" />
+          <h3 className="font-bold text-stone-900 dark:text-stone-100 text-sm">Cihaz Bulunamadı</h3>
+          <p className="text-xs text-stone-400 max-w-xs mx-auto">Arama kriterleriyle eşleşen cihaz yok veya henüz cihaz eklemediniz.</p>
           <button onClick={handleOpenAdd}
-            className="mx-auto bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition-all">
+            className="mx-auto bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition-all">
             <Plus size={13} /> Cihaz Ekle
           </button>
         </div>
@@ -647,19 +675,34 @@ export const Devices: React.FC<DevicesProps> = ({
       {showAddModal  && <DeviceForm onSubmit={handleSaveAdd}  title="Yeni Cihaz Ekle" />}
       {showEditModal && <DeviceForm onSubmit={handleSaveEdit} title="Cihazı Düzenle" />}
 
+      {/* Silme onayı — bottom sheet */}
       {showDeleteModal && selectedDevice && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-md animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4 animate-scale-in text-center">
-            <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto">
-              <AlertTriangle size={22} />
+        <div className="fixed inset-0 z-50 flex flex-col justify-end animate-fade-in"
+          onClick={() => setShowDeleteModal(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up pb-safe"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
             </div>
-            <h2 className="text-base font-black text-white">Cihazı Sil?</h2>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              <strong>{selectedDevice.name}</strong> ve buna ait tüm tüketim geçmişi kalıcı olarak silinecek.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setShowDeleteModal(false)} className="h-10 bg-slate-800 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs">Vazgeç</button>
-              <button onClick={() => { onDeleteDevice(selectedDevice.id); setShowDeleteModal(false); }} className="h-10 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs">Evet, Sil</button>
+            <div className="px-5 pb-6 pt-2 space-y-4 text-center">
+              <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+                <AlertTriangle size={22} />
+              </div>
+              <h2 className="text-base font-black text-stone-900 dark:text-stone-50">Cihazı Sil?</h2>
+              <p className="text-xs text-stone-400 leading-relaxed">
+                <strong>{selectedDevice.name}</strong> ve buna ait tüm tüketim geçmişi kalıcı olarak silinecek.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => setShowDeleteModal(false)}
+                  className="h-11 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 font-bold rounded-xl text-xs">
+                  Vazgeç
+                </button>
+                <button onClick={() => { onDeleteDevice(selectedDevice.id); setShowDeleteModal(false); }}
+                  className="h-11 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs">
+                  Evet, Sil
+                </button>
+              </div>
             </div>
           </div>
         </div>
