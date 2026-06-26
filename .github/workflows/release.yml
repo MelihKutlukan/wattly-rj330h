@@ -33,7 +33,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      # Ubuntu runner'da Android SDK /usr/local/lib/android/sdk altında geliyor
       - name: Configure Android SDK
         run: |
           ANDROID_SDK=/usr/local/lib/android/sdk
@@ -59,27 +58,9 @@ jobs:
           key: gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gradle-
 
-      - name: Setup signing keystore
+      - name: Decode keystore
         run: |
-          mkdir -p ~/.android
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > ~/.android/wattly-release.jks
-            echo "KEYSTORE_PATH=$HOME/.android/wattly-release.jks" >> $GITHUB_ENV
-            echo "KEYSTORE_ALIAS=wattly" >> $GITHUB_ENV
-            echo "KEYSTORE_PASS=wattly123" >> $GITHUB_ENV
-            echo "KEY_PASS=wattly123" >> $GITHUB_ENV
-            echo "USE_RELEASE_SIGN=true" >> $GITHUB_ENV
-          else
-            if [ ! -f ~/.android/debug.keystore ]; then
-              keytool -genkey -v \
-                -keystore ~/.android/debug.keystore \
-                -alias androiddebugkey \
-                -keyalg RSA -keysize 2048 -validity 10000 \
-                -storepass android -keypass android \
-                -dname "CN=Android Debug,O=Android,C=US"
-            fi
-            echo "USE_RELEASE_SIGN=false" >> $GITHUB_ENV
-          fi
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/wattly-release.jks
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
@@ -93,26 +74,17 @@ jobs:
           cp -r dist/. android/app/src/main/assets/public/
           cp capacitor.config.json android/app/src/main/assets/
 
-      - name: Build APK
+      - name: Build release APK
         run: |
-          if [ "$USE_RELEASE_SIGN" = "true" ]; then
-            cd android && ./gradlew assembleRelease --no-daemon \
-              -Pandroid.injected.signing.store.file=$KEYSTORE_PATH \
-              -Pandroid.injected.signing.store.password=$KEYSTORE_PASS \
-              -Pandroid.injected.signing.key.alias=$KEYSTORE_ALIAS \
-              -Pandroid.injected.signing.key.password=$KEY_PASS
-          else
-            cd android && ./gradlew assembleDebug --no-daemon
-          fi
+          cd android && ./gradlew assembleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file=/tmp/wattly-release.jks \
+            -Pandroid.injected.signing.store.password=wattly123 \
+            -Pandroid.injected.signing.key.alias=wattly \
+            -Pandroid.injected.signing.key.password=wattly123
 
       - name: Show build error details
         if: failure()
-        run: |
-          if [ "$USE_RELEASE_SIGN" = "true" ]; then
-            cd android && ./gradlew assembleRelease --no-daemon --info 2>&1 | tail -80 >> $GITHUB_STEP_SUMMARY || true
-          else
-            cd android && ./gradlew assembleDebug --no-daemon --info 2>&1 | tail -80 >> $GITHUB_STEP_SUMMARY || true
-          fi
+        run: cd android && ./gradlew assembleRelease --no-daemon --info 2>&1 | tail -80 >> $GITHUB_STEP_SUMMARY || true
 
       - name: Get version
         id: pkg
@@ -120,13 +92,8 @@ jobs:
 
       - name: Rename APK
         run: |
-          if [ "$USE_RELEASE_SIGN" = "true" ]; then
-            cp android/app/build/outputs/apk/release/app-release.apk \
-               "wattly-v${{ steps.pkg.outputs.VERSION }}.apk"
-          else
-            cp android/app/build/outputs/apk/debug/app-debug.apk \
-               "wattly-v${{ steps.pkg.outputs.VERSION }}.apk"
-          fi
+          cp android/app/build/outputs/apk/release/app-release.apk \
+             "wattly-v${{ steps.pkg.outputs.VERSION }}.apk"
 
       - name: Delete existing release
         run: gh release delete "v${{ steps.pkg.outputs.VERSION }}" --yes 2>/dev/null || true
