@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # Her 5 günde bir cache'i taze tut (debug.keystore 7 günde expire olur)
+    - cron: '0 3 */5 * *'
 
 jobs:
   build:
@@ -58,9 +61,27 @@ jobs:
           key: gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gradle-
 
-      - name: Decode keystore
+      # Keystore'u kalıcı cache'de sakla — static key sayesinde her build aynı keystore'u kullanır
+      - name: Cache debug keystore
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: wattly-keystore-permanent-v1
+
+      - name: Ensure debug keystore exists
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/wattly-release.jks
+          mkdir -p ~/.android
+          if [ ! -f ~/.android/debug.keystore ]; then
+            keytool -genkey -v \
+              -keystore ~/.android/debug.keystore \
+              -alias androiddebugkey \
+              -keyalg RSA -keysize 2048 -validity 36500 \
+              -storepass android -keypass android \
+              -dname "CN=Android Debug,O=Android,C=US"
+            echo "Yeni keystore olusturuldu"
+          else
+            echo "Mevcut keystore kullaniliyor"
+          fi
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
@@ -74,17 +95,12 @@ jobs:
           cp -r dist/. android/app/src/main/assets/public/
           cp capacitor.config.json android/app/src/main/assets/
 
-      - name: Build release APK
-        run: |
-          cd android && ./gradlew assembleRelease --no-daemon \
-            -Pandroid.injected.signing.store.file=/tmp/wattly-release.jks \
-            -Pandroid.injected.signing.store.password=wattly123 \
-            -Pandroid.injected.signing.key.alias=wattly \
-            -Pandroid.injected.signing.key.password=wattly123
+      - name: Build debug APK
+        run: cd android && ./gradlew assembleDebug --no-daemon
 
       - name: Show build error details
         if: failure()
-        run: cd android && ./gradlew assembleRelease --no-daemon --info 2>&1 | tail -80 >> $GITHUB_STEP_SUMMARY || true
+        run: cd android && ./gradlew assembleDebug --no-daemon --info 2>&1 | tail -80 >> $GITHUB_STEP_SUMMARY || true
 
       - name: Get version
         id: pkg
@@ -92,7 +108,7 @@ jobs:
 
       - name: Rename APK
         run: |
-          cp android/app/build/outputs/apk/release/app-release.apk \
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
              "wattly-v${{ steps.pkg.outputs.VERSION }}.apk"
 
       - name: Delete existing release
@@ -104,6 +120,7 @@ jobs:
         run: git push origin --delete "v${{ steps.pkg.outputs.VERSION }}" 2>/dev/null || true
 
       - name: Create GitHub Release
+        if: github.event_name != 'schedule'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.pkg.outputs.VERSION }}
