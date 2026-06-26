@@ -36,6 +36,20 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Android SDK 36 + Build Tools
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-
+
       - name: Cache debug keystore
         uses: actions/cache@v4
         with:
@@ -57,19 +71,21 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Create local.properties (Gradle SDK yolu)
+      - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
 
-      - name: Copy web assets to Android (manuel)
+      - name: Copy web assets to Android
         run: |
           mkdir -p android/app/src/main/assets/public
           cp -r dist/. android/app/src/main/assets/public/
           cp capacitor.config.json android/app/src/main/assets/
 
       - name: Build debug APK
-        run: cd android && ./gradlew assembleDebug --no-daemon
+        run: cd android && ./gradlew assembleDebug --no-daemon --stacktrace
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_SDK_ROOT }}
 
-      - name: Get version from package.json
+      - name: Get version
         id: pkg
         run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
@@ -78,12 +94,12 @@ jobs:
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              "wattly-v${{ steps.pkg.outputs.VERSION }}.apk"
 
-      - name: Delete existing release if same tag exists
+      - name: Delete existing release
         run: gh release delete "v${{ steps.pkg.outputs.VERSION }}" --yes 2>/dev/null || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Delete existing tag if exists
+      - name: Delete existing tag
         run: git push origin --delete "v${{ steps.pkg.outputs.VERSION }}" 2>/dev/null || true
 
       - name: Create GitHub Release
@@ -94,9 +110,9 @@ jobs:
           body: |
             🤖 Otomatik build
             📦 Commit: ${{ github.sha }}
-            🕐 Tarih: ${{ github.event.head_commit.timestamp }}
+            🕐 ${{ github.event.head_commit.timestamp }}
 
-            **Kurulum:** APK'yı indirip telefona kur (mevcut uygulamanın üzerine yazar)
+            **Kurulum:** APK'yı indirip telefona kur
           files: wattly-v${{ steps.pkg.outputs.VERSION }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
