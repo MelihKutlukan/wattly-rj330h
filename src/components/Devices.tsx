@@ -326,10 +326,10 @@ export const Devices: React.FC<DevicesProps> = ({
 
   // Bottom sheet device form
   const DeviceForm = ({ onSubmit, title }: { onSubmit: (e: React.FormEvent) => void; title: string }) => (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end animate-fade-in"
-      onClick={() => { setShowAddModal(false); setShowEditModal(false); }}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div className="relative bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
+    <>
+      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in"
+        onClick={() => { setShowAddModal(false); setShowEditModal(false); }} />
+      <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
         onClick={e => e.stopPropagation()}>
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
@@ -411,7 +411,7 @@ export const Devices: React.FC<DevicesProps> = ({
           </form>
         </div>
       </div>
-    </div>
+    </>
   );
 
   // Cihaz Detay
@@ -508,10 +508,9 @@ export const Devices: React.FC<DevicesProps> = ({
 
         {/* Tüketim Düzenleme — bottom sheet */}
         {editCons && (
-          <div className="fixed inset-0 z-50 flex flex-col justify-end animate-fade-in"
-            onClick={() => setEditCons(null)}>
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <div className="relative bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[85vh] pb-safe"
+          <>
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setEditCons(null)} />
+            <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[85vh] pb-safe"
               onClick={e => e.stopPropagation()}>
               <div className="flex justify-center pt-3 pb-1">
                 <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
@@ -572,7 +571,7 @@ export const Devices: React.FC<DevicesProps> = ({
                 </form>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     );
@@ -677,10 +676,9 @@ export const Devices: React.FC<DevicesProps> = ({
 
       {/* Silme onayı — bottom sheet */}
       {showDeleteModal && selectedDevice && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end animate-fade-in"
-          onClick={() => setShowDeleteModal(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up pb-safe"
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowDeleteModal(false)} />
+          <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up pb-safe"
             onClick={e => e.stopPropagation()}>
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
@@ -705,7 +703,7 @@ export const Devices: React.FC<DevicesProps> = ({
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

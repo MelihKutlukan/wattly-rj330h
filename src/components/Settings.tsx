@@ -328,80 +328,90 @@ export const SettingsPanel: React.FC<SettingsProps> = ({
 
       {/* Sıfırlama Modal */}
       {showResetConfirm && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-md animate-fade-in">
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl p-6 w-full max-w-md space-y-4 animate-scale-in text-center">
-            <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-full flex items-center justify-center mx-auto">
-              <Trash2 size={22} />
-            </div>
-            <h2 className="text-base font-black text-stone-900 dark:text-stone-50">Tüm Verileri Sıfırlansın mı?</h2>
-            <p className="text-xs text-stone-400 leading-relaxed">
-              Tüm odalar, cihazlar, tüketim geçmişi, elektrik ve su faturaları <strong>kalıcı olarak silinecek</strong>. Bu işlem geri alınamaz!
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setShowResetConfirm(false)}
-                className="h-10 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 font-bold rounded-xl text-xs">Vazgeç</button>
-              <button onClick={() => { onResetData(); setShowResetConfirm(false); toast('Tüm veriler sıfırlandı.'); }}
-                className="h-10 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs">Evet, Sıfırla!</button>
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md animate-fade-in" onClick={() => setShowResetConfirm(false)} />
+          <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up pb-safe">
+            <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" /></div>
+            <div className="px-5 pb-6 pt-2 space-y-4 text-center">
+              <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+                <Trash2 size={22} />
+              </div>
+              <h2 className="text-base font-black text-stone-900 dark:text-stone-50">Tüm Verileri Sıfırlansın mı?</h2>
+              <p className="text-xs text-stone-400 leading-relaxed">
+                Tüm odalar, cihazlar, tüketim geçmişi, elektrik ve su faturaları <strong>kalıcı olarak silinecek</strong>. Bu işlem geri alınamaz!
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => setShowResetConfirm(false)}
+                  className="h-11 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 font-bold rounded-xl text-xs">Vazgeç</button>
+                <button onClick={() => { onResetData(); setShowResetConfirm(false); toast('Tüm veriler sıfırlandı.'); }}
+                  className="h-11 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs">Evet, Sıfırla!</button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* PDF Rapor Modal */}
       {showReport && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl p-6 w-full max-w-lg space-y-4 relative max-h-[85vh] overflow-y-auto animate-scale-in">
-            <button onClick={() => setShowReport(false)} className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"><X size={20} /></button>
-            <h2 className="text-base font-black text-stone-900 dark:text-stone-50">Enerji Raporu</h2>
-            <div className="bg-white text-stone-950 p-6 rounded-2xl font-sans text-xs space-y-4 leading-relaxed border border-stone-200">
-              <div className="text-center border-b pb-3 border-stone-200">
-                <h1 className="text-lg font-black text-amber-600">WATTLY ENERJİ RAPORU</h1>
-                <p className="text-[10px] text-stone-500 mt-0.5">{new Date().toLocaleDateString('tr-TR', { dateStyle: 'long' })}</p>
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowReport(false)} />
+          <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-lg mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" /></div>
+            <div className="px-5 pb-6 pt-2 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-black text-stone-900 dark:text-stone-50">Enerji Raporu</h2>
+                <button onClick={() => setShowReport(false)} className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"><X size={20} /></button>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-extrabold text-stone-400 text-[10px] uppercase mb-1">İstatistikler</h4>
-                  <ul className="space-y-1 text-stone-800 font-medium">
-                    <li>• Toplam Oda: {rooms.length}</li>
-                    <li>• Toplam Cihaz: {devices.length}</li>
-                    <li>• Tüketim Kaydı: {consumptions.length}</li>
-                    <li>• Elektrik Faturası: {bills.length}</li>
-                    <li>• Su Faturası: {waterBills.length}</li>
-                  </ul>
+              <div className="bg-white text-stone-950 p-6 rounded-2xl font-sans text-xs space-y-4 leading-relaxed border border-stone-200">
+                <div className="text-center border-b pb-3 border-stone-200">
+                  <h1 className="text-lg font-black text-amber-600">WATTLY ENERJİ RAPORU</h1>
+                  <p className="text-[10px] text-stone-500 mt-0.5">{new Date().toLocaleDateString('tr-TR', { dateStyle: 'long' })}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-extrabold text-stone-400 text-[10px] uppercase mb-1">İstatistikler</h4>
+                    <ul className="space-y-1 text-stone-800 font-medium">
+                      <li>• Toplam Oda: {rooms.length}</li>
+                      <li>• Toplam Cihaz: {devices.length}</li>
+                      <li>• Tüketim Kaydı: {consumptions.length}</li>
+                      <li>• Elektrik Faturası: {bills.length}</li>
+                      <li>• Su Faturası: {waterBills.length}</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-stone-400 text-[10px] uppercase mb-1">Tarife</h4>
+                    <ul className="space-y-1 text-stone-800 font-medium">
+                      <li>• Birim Fiyat: {settings.unitPrice.toFixed(2)} {settings.currency}/kWh</li>
+                      <li>• CO₂ Faktörü: {(settings.co2Factor ?? 0.47)} kg/kWh</li>
+                      {settings.monthlyBudget && <li>• Bütçe: {settings.monthlyBudget} {settings.currency}</li>}
+                    </ul>
+                  </div>
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-stone-400 text-[10px] uppercase mb-1">Tarife</h4>
-                  <ul className="space-y-1 text-stone-800 font-medium">
-                    <li>• Birim Fiyat: {settings.unitPrice.toFixed(2)} {settings.currency}/kWh</li>
-                    <li>• CO₂ Faktörü: {(settings.co2Factor ?? 0.47)} kg/kWh</li>
-                    {settings.monthlyBudget && <li>• Bütçe: {settings.monthlyBudget} {settings.currency}</li>}
-                  </ul>
+                  <h4 className="font-extrabold text-stone-400 text-[10px] uppercase border-b pb-1 mb-2">Odalar</h4>
+                  <table className="w-full text-left">
+                    <thead><tr className="text-stone-400 text-[9px] border-b"><th>Oda</th><th>Cihaz Sayısı</th></tr></thead>
+                    <tbody>
+                      {rooms.map(r => (
+                        <tr key={r.id} className="border-b">
+                          <td className="py-1 font-bold">{r.name}</td>
+                          <td className="py-1 font-mono">{devices.filter(d => d.roomId === r.id).length}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+                <p className="text-center text-[9px] text-stone-400 pt-2 border-t">Wattly {APP_VERSION}</p>
               </div>
-              <div>
-                <h4 className="font-extrabold text-stone-400 text-[10px] uppercase border-b pb-1 mb-2">Odalar</h4>
-                <table className="w-full text-left">
-                  <thead><tr className="text-stone-400 text-[9px] border-b"><th>Oda</th><th>Cihaz Sayısı</th></tr></thead>
-                  <tbody>
-                    {rooms.map(r => (
-                      <tr key={r.id} className="border-b">
-                        <td className="py-1 font-bold">{r.name}</td>
-                        <td className="py-1 font-mono">{devices.filter(d => d.roomId === r.id).length}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => setShowReport(false)} className="h-11 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold rounded-xl text-xs">Kapat</button>
+                <button onClick={() => window.print()} className="h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5">
+                  <Printer size={13} /> Yazdır
+                </button>
               </div>
-              <p className="text-center text-[9px] text-stone-400 pt-2 border-t">Wattly {APP_VERSION}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setShowReport(false)} className="h-11 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold rounded-xl text-xs">Kapat</button>
-              <button onClick={() => window.print()} className="h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5">
-                <Printer size={13} /> Yazdır
-              </button>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

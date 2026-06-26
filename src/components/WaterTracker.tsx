@@ -127,10 +127,10 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
 
   // Bottom sheet modal — kaydırılabilir, klavye açıldığında ekran aşağı kayar
   const ModalForm = ({ onSubmit, title }: { onSubmit: (e: React.FormEvent) => void; title: string }) => (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end animate-fade-in" onClick={closeModal}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+    <>
+      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={closeModal} />
       <div
-        className="relative bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
+        className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
         onClick={e => e.stopPropagation()}
       >
         {/* Handle bar */}
@@ -217,7 +217,7 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
           </form>
         </div>
       </div>
-    </div>
+    </>
   );
 
   const cardCls = "bg-white dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 space-y-1 transition-all cursor-default";
@@ -384,27 +384,27 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
       {showEditModal && <ModalForm onSubmit={handleSaveEdit} title="Su Faturasını Düzenle" />}
 
       {showDeleteModal && selected && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl p-6 w-full max-w-md space-y-4 animate-scale-in text-center">
-            <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-full flex items-center justify-center mx-auto">
-              <AlertTriangle size={24} />
-            </div>
-            <h2 className="text-base font-black text-stone-900 dark:text-stone-50">Faturayı Sil?</h2>
-            <p className="text-xs text-stone-500">
-              <strong>{MONTHS[selected.month - 1]} {selected.year}</strong> su faturası kalıcı olarak silinecek.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setShowDeleteModal(false)}
-                className="h-10 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 font-bold rounded-xl text-xs">
-                Vazgeç
-              </button>
-              <button onClick={() => { onDeleteWaterBill(selected.id); setShowDeleteModal(false); }}
-                className="h-10 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs">
-                Sil
-              </button>
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowDeleteModal(false)} />
+          <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up pb-safe">
+            <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" /></div>
+            <div className="px-5 pb-6 pt-2 space-y-4 text-center">
+              <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+                <AlertTriangle size={24} />
+              </div>
+              <h2 className="text-base font-black text-stone-900 dark:text-stone-50">Faturayı Sil?</h2>
+              <p className="text-xs text-stone-500">
+                <strong>{MONTHS[selected.month - 1]} {selected.year}</strong> su faturası kalıcı olarak silinecek.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => setShowDeleteModal(false)}
+                  className="h-11 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 font-bold rounded-xl text-xs">Vazgeç</button>
+                <button onClick={() => { onDeleteWaterBill(selected.id); setShowDeleteModal(false); }}
+                  className="h-11 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs">Sil</button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
