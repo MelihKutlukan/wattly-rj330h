@@ -6,7 +6,8 @@ import {
   CheckCircle2, X, Github, RefreshCcw, AlertCircle
 } from 'lucide-react';
 
-const APP_VERSION = 'v1.1.0';
+declare const __APP_VERSION__: string;
+const APP_VERSION = 'v' + __APP_VERSION__;
 
 interface SettingsProps {
   settings: AppSettings;
@@ -21,7 +22,7 @@ interface SettingsProps {
   onImportData: (data: { rooms: Room[]; devices: Device[]; consumptions: Consumption[]; bills: Bill[]; waterBills: WaterBill[]; settings: AppSettings }) => void;
 }
 
-type UpdateStatus = { type: 'idle' | 'loading' | 'uptodate' | 'update' | 'error'; msg: string; version?: string };
+type UpdateStatus = { type: 'idle' | 'loading' | 'uptodate' | 'update' | 'error'; msg: string; version?: string; apkUrl?: string };
 
 export const SettingsPanel: React.FC<SettingsProps> = ({
   settings, rooms, devices, consumptions, bills, waterBills,
@@ -31,7 +32,7 @@ export const SettingsPanel: React.FC<SettingsProps> = ({
   const [currency, setCurrency]       = useState(settings.currency);
   const [monthlyBudget, setMonthlyBudget] = useState(settings.monthlyBudget ? String(settings.monthlyBudget) : '');
   const [targetKwh, setTargetKwh]     = useState(settings.consumptionTargetKwh ? String(settings.consumptionTargetKwh) : '');
-  const [githubRepo, setGithubRepo]   = useState(settings.githubRepo || '');
+  const [githubRepo, setGithubRepo]   = useState(settings.githubRepo || 'MelihKutlukan/wattly-rj330h');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showReport, setShowReport]   = useState(false);
   const [statusMsg, setStatusMsg]     = useState({ text: '', type: 'success' as 'success' | 'error' });
@@ -114,17 +115,20 @@ export const SettingsPanel: React.FC<SettingsProps> = ({
   const checkUpdate = async () => {
     const repo = githubRepo.trim();
     if (!repo) {
-      setUpdateStatus({ type: 'error', msg: 'GitHub repo adresi girilmemiş. Lütfen yukarıda yapılandırın.' });
+      setUpdateStatus({ type: 'error', msg: 'GitHub repo adresi girilmemiş.' });
       return;
     }
     setUpdateStatus({ type: 'loading', msg: 'Sunucudan versiyon kontrol ediliyor...' });
     try {
       const res  = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
-      if (!res.ok) throw new Error('Repo bulunamadı');
+      if (!res.ok) throw new Error('Release bulunamadı');
       const data = await res.json();
       const tag  = data.tag_name as string;
+      // APK asset URL'ini bul
+      const apkAsset = (data.assets as any[])?.find((a: any) => a.name.endsWith('.apk'));
+      const apkUrl   = apkAsset?.browser_download_url as string | undefined;
       if (tag > APP_VERSION) {
-        setUpdateStatus({ type: 'update', msg: `Yeni sürüm mevcut: ${tag}`, version: tag });
+        setUpdateStatus({ type: 'update', msg: `Yeni sürüm mevcut: ${tag}`, version: tag, apkUrl });
       } else {
         setUpdateStatus({ type: 'uptodate', msg: `Uygulama güncel — ${APP_VERSION}` });
       }
@@ -133,12 +137,11 @@ export const SettingsPanel: React.FC<SettingsProps> = ({
     }
   };
 
-  const doUpdate = async () => {
-    if ('caches' in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map(k => caches.delete(k)));
-    }
-    window.location.reload();
+  // APK indirme linkini tarayıcıda aç — Android bunu doğrudan indirir
+  const doUpdate = () => {
+    const url = updateStatus.apkUrl;
+    if (!url) return;
+    window.open(url, '_system');
   };
 
   return (
