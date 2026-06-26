@@ -36,6 +36,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Set Android SDK env vars
+        run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "PATH=$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
+
       # Keystore'u cache'le — aynı imza her build'de kullanılsın
       - name: Cache debug keystore
         uses: actions/cache@v4
@@ -53,16 +58,14 @@ jobs:
               -keyalg RSA -keysize 2048 -validity 10000 \
               -storepass android -keypass android \
               -dname "CN=Android Debug,O=Android,C=US"
-            echo "Yeni debug keystore olusturuldu."
-          else
-            echo "Mevcut debug keystore kullaniliyor."
           fi
-
-      - name: Capacitor sync
-        run: npx cap sync android
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
+
+      # cap copy: sadece web dosyalarını android projesine kopyalar (SDK gerektirmez)
+      - name: Copy web assets to Android
+        run: npx cap copy android
 
       - name: Build debug APK
         run: cd android && ./gradlew assembleDebug --no-daemon
@@ -76,7 +79,7 @@ jobs:
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              "wattly-v${{ steps.pkg.outputs.VERSION }}.apk"
 
-      # Aynı versiyon etiketi varsa sil (yeniden push durumu için)
+      # Aynı versiyon etiketi varsa sil
       - name: Delete existing release if same tag exists
         run: gh release delete "v${{ steps.pkg.outputs.VERSION }}" --yes 2>/dev/null || true
         env:
