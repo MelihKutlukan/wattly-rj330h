@@ -4,20 +4,11 @@
  */
 
 import React from 'react';
-import { Room, Device, Consumption, Bill, AppSettings } from '../types';
+import { Room, Device, Consumption, Bill, AppSettings, DEVICE_TYPES } from '../types';
 import { IconRenderer } from './IconRenderer';
-import { 
-  Zap, 
-  Coins, 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  Plus, 
-  Home, 
-  Clock, 
-  Star, 
-  ShieldAlert,
-  ArrowRight
+import {
+  Zap, Coins, TrendingUp, TrendingDown, AlertTriangle, Plus,
+  Clock, Star, ShieldAlert, ArrowRight, BarChart3, FileSpreadsheet
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -31,402 +22,344 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
-  rooms,
-  devices,
-  consumptions,
-  bills,
-  settings,
-  onNavigate,
-  onOpenAddConsumption
+  rooms, devices, consumptions, bills, settings, onNavigate, onOpenAddConsumption
 }) => {
-  // Format helpers
-  const formatMoney = (val: number) => {
-    return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val) + ' ' + settings.currency;
-  };
+  const formatMoney = (val: number) =>
+    new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val) + ' ' + settings.currency;
 
-  const formatKwh = (val: number) => {
-    return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val) + ' kWh';
-  };
+  const formatKwh = (val: number) =>
+    new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val) + ' kWh';
 
-  // 1. DATE HELPERS
-  const todayStr = new Date().toISOString().split('T')[0];
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1; // 1-12
+  // Date helpers
+  const todayStr        = new Date().toISOString().split('T')[0];
+  const currentYear     = new Date().getFullYear();
+  const currentMonth    = new Date().getMonth() + 1;
   const currentMonthStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
-  
-  const lastMonthYear = currentMonth === 1 ? currentYear - 1 : currentYear;
-  const lastMonth = currentMonth === 1 ? 12 : currentMonth - 1;
-  const lastMonthStr = `${lastMonthYear}-${String(lastMonth).padStart(2, '0')}`;
+  const lastMonthYear   = currentMonth === 1 ? currentYear - 1 : currentYear;
+  const lastMonth       = currentMonth === 1 ? 12 : currentMonth - 1;
+  const lastMonthStr    = `${lastMonthYear}-${String(lastMonth).padStart(2, '0')}`;
 
-  // 2. METRIC CALCULATIONS
-  // Today's consumption
-  const todayConsumptions = consumptions.filter(c => c.date === todayStr);
-  const todayKwh = todayConsumptions.reduce((sum, c) => sum + c.kwh, 0);
-  const todayCost = todayConsumptions.reduce((sum, c) => sum + c.totalCost, 0);
-
-  // Current Month's consumption
+  // Metrics
+  const todayConsumptions       = consumptions.filter(c => c.date === todayStr);
+  const todayKwh                = todayConsumptions.reduce((s, c) => s + c.kwh, 0);
+  const todayCost               = todayConsumptions.reduce((s, c) => s + c.totalCost, 0);
   const currentMonthConsumptions = consumptions.filter(c => c.date.startsWith(currentMonthStr));
-  const currentMonthKwh = currentMonthConsumptions.reduce((sum, c) => sum + c.kwh, 0);
-  const currentMonthCost = currentMonthConsumptions.reduce((sum, c) => sum + c.totalCost, 0);
+  const currentMonthKwh         = currentMonthConsumptions.reduce((s, c) => s + c.kwh, 0);
+  const currentMonthCost        = currentMonthConsumptions.reduce((s, c) => s + c.totalCost, 0);
+  const lastMonthKwh            = consumptions.filter(c => c.date.startsWith(lastMonthStr)).reduce((s, c) => s + c.kwh, 0);
 
-  // Previous Month's consumption
-  const lastMonthConsumptions = consumptions.filter(c => c.date.startsWith(lastMonthStr));
-  const lastMonthKwh = lastMonthConsumptions.reduce((sum, c) => sum + c.kwh, 0);
-  const lastMonthCost = lastMonthConsumptions.reduce((sum, c) => sum + c.totalCost, 0);
+  const growthPercent    = lastMonthKwh > 0 ? ((currentMonthKwh - lastMonthKwh) / lastMonthKwh) * 100 : 0;
+  const hasComparison    = lastMonthKwh > 0;
+  const daysInMonth      = new Date(currentYear, currentMonth, 0).getDate();
+  const passedDays       = Math.max(new Date().getDate(), 1);
+  const estMonthlyKwh    = (currentMonthKwh / passedDays) * daysInMonth;
+  const estMonthlyBill   = estMonthlyKwh * settings.unitPrice;
 
-  // Growth / Decline percentage
-  let growthPercent = 0;
-  let hasComparisonData = false;
-  if (lastMonthKwh > 0) {
-    growthPercent = ((currentMonthKwh - lastMonthKwh) / lastMonthKwh) * 100;
-    hasComparisonData = true;
-  }
+  // Top device/room this month
+  const deviceKwhMap: Record<string, number> = {};
+  currentMonthConsumptions.forEach(c => { deviceKwhMap[c.deviceId] = (deviceKwhMap[c.deviceId] || 0) + c.kwh; });
+  const topDeviceId  = Object.entries(deviceKwhMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+  const topDevice    = devices.find(d => d.id === topDeviceId);
+  const topDeviceKwh = deviceKwhMap[topDeviceId] || 0;
+  const topRoom      = rooms.find(r => r.id === topDevice?.roomId);
 
-  // Most consuming room
-  const roomConsumptionMap: Record<string, number> = {};
-  consumptions.forEach(c => {
-    if (c.date.startsWith(currentMonthStr)) {
-      roomConsumptionMap[c.roomId] = (roomConsumptionMap[c.roomId] || 0) + c.kwh;
-    }
-  });
-  let topRoomId = '';
-  let topRoomKwh = 0;
-  Object.entries(roomConsumptionMap).forEach(([roomId, kwh]) => {
-    if (kwh > topRoomKwh) {
-      topRoomKwh = kwh;
-      topRoomId = roomId;
-    }
-  });
-  const topRoom = rooms.find(r => r.id === topRoomId);
+  // Bills
+  const unpaidBills        = bills.filter(b => !b.isPaid);
+  const totalUnpaidAmount  = unpaidBills.reduce((s, b) => s + b.totalAmount, 0);
+  const budgetAlert        = settings.monthlyBudget && currentMonthCost > settings.monthlyBudget;
 
-  // Most consuming device
-  const deviceConsumptionMap: Record<string, number> = {};
-  consumptions.forEach(c => {
-    if (c.date.startsWith(currentMonthStr)) {
-      deviceConsumptionMap[c.deviceId] = (deviceConsumptionMap[c.deviceId] || 0) + c.kwh;
-    }
-  });
-  let topDeviceId = '';
-  let topDeviceKwh = 0;
-  Object.entries(deviceConsumptionMap).forEach(([deviceId, kwh]) => {
-    if (kwh > topDeviceKwh) {
-      topDeviceKwh = kwh;
-      topDeviceId = deviceId;
-    }
-  });
-  const topDevice = devices.find(d => d.id === topDeviceId);
-
-  // 3. TAHMİNİ AY SONU FATURASI
-  // Formula: Current Month Consumption / Passed Days of Month * Total Days in Month
-  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
-  const currentDay = new Date().getDate();
-  const passedDays = currentDay > 0 ? currentDay : 1;
-  const estimatedMonthlyKwh = (currentMonthKwh / passedDays) * daysInMonth;
-  const estimatedMonthlyBill = estimatedMonthlyKwh * settings.unitPrice;
-
-  // Unpaid bills check
-  const unpaidBills = bills.filter(b => !b.isPaid);
-  const totalUnpaidAmount = unpaidBills.reduce((sum, b) => sum + b.totalAmount, 0);
-
-  // Favorite devices list
-  const favoriteDevices = devices.filter(d => d.isFavorite);
-
-  // 4. LATEST CONSUMPTION ENTRIES
-  const sortedConsumptions = [...consumptions]
-    .sort((a, b) => b.createdAt - a.createdAt)
-    .slice(0, 4);
-
-  // 5. MINI BAR CHART (Last 7 days)
-  const last7DaysData = Array.from({ length: 7 }).map((_, i) => {
+  // Last 7 days chart
+  const last7Days = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
-    d.setDate(new Date().getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-    const dailyKwh = consumptions
-      .filter(c => c.date === dateStr)
-      .reduce((sum, c) => sum + c.kwh, 0);
-    const dayName = d.toLocaleDateString('tr-TR', { weekday: 'short' });
-    return { dayName, kwh: dailyKwh, dateStr };
-  }).reverse();
+    d.setDate(new Date().getDate() - (6 - i));
+    const dateStr  = d.toISOString().split('T')[0];
+    const kwh      = consumptions.filter(c => c.date === dateStr).reduce((s, c) => s + c.kwh, 0);
+    const dayName  = d.toLocaleDateString('tr-TR', { weekday: 'short' });
+    return { dayName, kwh, dateStr };
+  });
+  const maxKwh       = Math.max(...last7Days.map(d => d.kwh), 1);
+  const avgWeeklyKwh = last7Days.reduce((s, d) => s + d.kwh, 0) / 7;
 
-  const maxWeeklyKwh = Math.max(...last7DaysData.map(d => d.kwh), 1);
-
-  // Target budget check
-  const budgetAlert = settings.monthlyBudget && currentMonthCost > settings.monthlyBudget;
-  const targetAlert = settings.consumptionTargetKwh && currentMonthKwh > settings.consumptionTargetKwh;
+  const favoriteDevices = devices.filter(d => d.isFavorite);
+  const sortedConsumptions = [...consumptions].sort((a, b) => b.createdAt - a.createdAt).slice(0, 4);
 
   return (
-    <div id="dashboard-container" className="space-y-6 pb-20">
-      {/* Header Banner */}
+    <div className="space-y-5 pb-24 animate-fade-in">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            Wattly
-          </h1>
+          <h1 className="text-2xl font-black bg-gradient-to-r from-indigo-400 to-emerald-400 bg-clip-text text-transparent">Wattly</h1>
           <p className="text-xs text-slate-400">Akıllı Elektrik Takip Sistemi</p>
         </div>
-        <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-800 rounded-xl px-3 py-1.5">
-          <Clock size={14} className="text-blue-400" />
+        <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-1.5">
+          <Clock size={13} className="text-indigo-400" />
           <span className="text-xs text-slate-300 font-medium font-mono">
             {new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
           </span>
         </div>
       </div>
 
-      {/* Warning Banners */}
+      {/* Budget Alert */}
       {budgetAlert && (
-        <div className="flex items-center gap-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 text-rose-400 animate-pulse">
-          <ShieldAlert size={20} className="shrink-0" />
-          <div className="text-xs font-semibold">
-            Bütçe Aşımı Uyarısı! Bu ayki bütçe hedefinizi ({formatMoney(settings.monthlyBudget || 0)}) aştınız. Güncel: {formatMoney(currentMonthCost)}
-          </div>
+        <div className="flex items-center gap-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl p-3.5 text-rose-400">
+          <ShieldAlert size={18} className="shrink-0 animate-pulse" />
+          <p className="text-xs font-semibold">Bütçe Aşımı! Aylık hedef: {formatMoney(settings.monthlyBudget || 0)} — Güncel: {formatMoney(currentMonthCost)}</p>
         </div>
       )}
 
+      {/* Unpaid bills alert */}
       {unpaidBills.length > 0 && (
-        <div className="flex items-center justify-between gap-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 text-amber-400">
+        <button onClick={() => onNavigate('bills')}
+          className="w-full flex items-center justify-between gap-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 text-amber-400 text-left transition-all hover:bg-amber-500/15 active:scale-[0.99]">
           <div className="flex items-center gap-3">
-            <AlertTriangle size={20} className="shrink-0 animate-bounce" />
-            <div className="text-xs">
-              <span className="font-bold">Ödenmemiş Fatura!</span> {unpaidBills.length} adet faturanız ödenmeyi bekliyor. Toplam: <span className="font-mono font-bold">{formatMoney(totalUnpaidAmount)}</span>
-            </div>
+            <AlertTriangle size={18} className="shrink-0 animate-bounce" />
+            <p className="text-xs">
+              <strong>{unpaidBills.length}</strong> ödenmemiş fatura · Toplam{' '}
+              <span className="font-mono font-bold">{formatMoney(totalUnpaidAmount)}</span>
+            </p>
           </div>
-          <button onClick={() => onNavigate('bills')} className="text-xs font-bold text-amber-400 hover:underline flex items-center gap-1 shrink-0">
-            Öde <ArrowRight size={12} />
-          </button>
-        </div>
+          <ArrowRight size={14} className="shrink-0" />
+        </button>
       )}
 
-      {/* Main Glassmorphism Card: Current Month Estimation */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600/20 to-emerald-600/5 border border-slate-800 rounded-3xl p-6 shadow-2xl backdrop-blur-xl">
-        <div className="absolute top-0 right-0 -mr-6 -mt-6 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="space-y-4">
+      {/* Main hero card — estimated monthly bill */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600/20 to-slate-900/60 border border-indigo-500/20 rounded-3xl p-5 shadow-2xl">
+        <div className="absolute top-0 right-0 -mr-8 -mt-8 w-36 h-36 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 -ml-4 -mb-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative space-y-4">
           <div className="flex justify-between items-start">
-            <span className="text-xs text-slate-300 font-semibold tracking-wide uppercase bg-slate-800/60 px-2.5 py-1 rounded-full border border-slate-700/50">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-slate-800/60 px-2.5 py-1 rounded-full">
               Bu Ayki Tahmin
             </span>
-            <div className="flex items-center gap-1.5 text-xs">
-              {hasComparisonData ? (
-                growthPercent > 0 ? (
-                  <span className="flex items-center gap-1 text-rose-400 font-bold bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
-                    <TrendingUp size={12} /> +{growthPercent.toFixed(1)}%
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    <TrendingDown size={12} /> {growthPercent.toFixed(1)}%
-                  </span>
-                )
+            {hasComparison && (
+              growthPercent > 0 ? (
+                <span className="flex items-center gap-1 text-rose-400 text-xs font-bold bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+                  <TrendingUp size={11} /> +{growthPercent.toFixed(1)}%
+                </span>
               ) : (
-                <span className="text-slate-400 font-medium">Kıyas için veri bekleniyor</span>
-              )}
-            </div>
+                <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <TrendingDown size={11} /> {growthPercent.toFixed(1)}%
+                </span>
+              )
+            )}
           </div>
 
           <div>
-            <span className="text-xs text-slate-400 font-medium">Tahmini Ay Sonu Faturası</span>
-            <div className="text-4xl font-extrabold tracking-tight text-white font-mono mt-0.5">
-              {formatMoney(estimatedMonthlyBill)}
-            </div>
+            <p className="text-[10px] text-slate-400 font-bold mb-0.5">Tahmini Ay Sonu Faturası</p>
+            <div className="text-4xl font-extrabold tracking-tight text-white font-mono">{formatMoney(estMonthlyBill)}</div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800/80">
-            <div className="space-y-0.5">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Güncel Tüketim</span>
-              <div className="text-sm font-extrabold text-blue-400 font-mono">{formatKwh(currentMonthKwh)}</div>
-              <div className="text-[11px] text-slate-400 font-medium">Tutar: {formatMoney(currentMonthCost)}</div>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Tahmini Tüketim</span>
-              <div className="text-sm font-extrabold text-emerald-400 font-mono">{formatKwh(estimatedMonthlyKwh)}</div>
-              <div className="text-[11px] text-slate-400 font-medium">Birim Fiyat: {settings.unitPrice.toFixed(2)} TL</div>
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800/60">
+            <button onClick={() => onNavigate('analytics')} className="space-y-0.5 text-left hover:opacity-80 transition-opacity">
+              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider flex items-center gap-1">
+                <BarChart3 size={9} /> Güncel Tüketim
+              </span>
+              <div className="text-sm font-extrabold text-indigo-400 font-mono">{formatKwh(currentMonthKwh)}</div>
+              <div className="text-[11px] text-slate-400">{formatMoney(currentMonthCost)}</div>
+            </button>
+            <div className="space-y-0.5 text-right">
+              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Tahmini Toplam</span>
+              <div className="text-sm font-extrabold text-emerald-400 font-mono">{formatKwh(estMonthlyKwh)}</div>
+              <div className="text-[11px] text-slate-400">{settings.unitPrice.toFixed(2)} TL/kWh</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Grid: Daily & Room/Device highlights */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Today Card */}
-        <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 space-y-3 backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-blue-400">
-            <Zap size={16} />
-            <span className="text-xs font-bold text-slate-300">Bugünkü Durum</span>
+      {/* Quick stats row */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Today */}
+        <button onClick={() => onNavigate('analytics')}
+          className="bg-slate-900/40 border border-slate-800 hover:border-indigo-500/20 rounded-2xl p-4 text-left transition-all active:scale-[0.98] space-y-2.5">
+          <div className="flex items-center gap-1.5 text-indigo-400">
+            <Zap size={14} />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Bugün</span>
           </div>
-          <div className="space-y-0.5">
-            <div className="text-lg font-black font-mono text-white">{formatKwh(todayKwh)}</div>
-            <div className="text-xs text-emerald-400 font-bold font-mono">{formatMoney(todayCost)}</div>
+          <div>
+            <div className="text-base font-black font-mono text-white">{formatKwh(todayKwh)}</div>
+            <div className="text-xs text-emerald-400 font-bold font-mono mt-0.5">{formatMoney(todayCost)}</div>
           </div>
-        </div>
+        </button>
 
-        {/* Most consumed device/room */}
-        <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 space-y-3 backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-emerald-400">
-            <Coins size={16} />
-            <span className="text-xs font-bold text-slate-300">Zirve Tüketici</span>
+        {/* Top device */}
+        <button onClick={() => onNavigate('devices')}
+          className="bg-slate-900/40 border border-slate-800 hover:border-indigo-500/20 rounded-2xl p-4 text-left transition-all active:scale-[0.98] space-y-2.5">
+          <div className="flex items-center gap-1.5 text-emerald-400">
+            <Coins size={14} />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Zirve Tük.</span>
           </div>
           {topDevice ? (
-            <div className="space-y-0.5 min-w-0">
+            <div className="min-w-0">
               <div className="text-xs font-bold text-white truncate">{topDevice.name}</div>
-              <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                <span>{topRoom?.name || 'Oda'}</span>
-                <span>•</span>
-                <span className="font-mono text-rose-400 font-bold">{formatKwh(topDeviceKwh)}</span>
+              <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                <span style={{ color: topRoom?.color }}>{topRoom?.name || 'Oda'}</span>
+                <span>·</span>
+                <span className="font-mono text-rose-400 font-bold">{topDeviceKwh.toFixed(1)} kWh</span>
               </div>
             </div>
           ) : (
-            <div className="text-xs text-slate-400">Henüz yeterli tüketim verisi yok.</div>
+            <p className="text-[10px] text-slate-500">Henüz veri yok</p>
           )}
-        </div>
+        </button>
       </div>
 
-      {/* Mini Chart Component (Custom interactive SVG bar chart for 7-day trend) */}
-      <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 space-y-4">
+      {/* 7-day bar chart */}
+      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 space-y-4">
         <div className="flex justify-between items-center">
-          <div className="space-y-0.5">
-            <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Son 7 Günlük Tüketim</h3>
-            <p className="text-[10px] text-slate-400">Haftalık elektrik kullanım trendi</p>
+          <div>
+            <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Son 7 Gün</h3>
+            <p className="text-[9px] text-slate-500 mt-0.5">Elektrik tüketim trendi</p>
           </div>
-          <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 font-mono">
-            Orta: {formatKwh(last7DaysData.reduce((sum, d) => sum + d.kwh, 0) / 7)}
-          </span>
+          <button onClick={() => onNavigate('analytics')}
+            className="text-[9px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-full border border-indigo-500/20 flex items-center gap-1 hover:bg-indigo-500/20 transition-all">
+            <BarChart3 size={9} /> Analiz
+          </button>
         </div>
 
-        {/* Custom SVG Bar Chart */}
-        <div className="h-28 flex items-end justify-between gap-1 pt-2">
-          {last7DaysData.map((day, idx) => {
-            const barHeightPercent = (day.kwh / maxWeeklyKwh) * 100;
+        <div className="h-24 flex items-end justify-between gap-1">
+          {last7Days.map((day, idx) => {
+            const barPct  = (day.kwh / maxKwh) * 100;
             const isToday = day.dateStr === todayStr;
             return (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer">
-                {/* Tooltip on hover */}
-                <div className="absolute mb-14 bg-slate-950 border border-slate-800 text-[9px] font-bold text-white py-1 px-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 font-mono">
+              <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 group relative">
+                <div className="absolute bottom-7 bg-slate-950 border border-slate-800 text-[8px] font-bold text-white py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 font-mono whitespace-nowrap">
                   {day.kwh.toFixed(2)} kWh
                 </div>
-
-                {/* Bar */}
-                <div className="w-full bg-slate-800/50 rounded-md h-20 flex items-end overflow-hidden">
-                  <div 
-                    style={{ height: `${Math.max(barHeightPercent, 4)}%` }}
-                    className={`w-full rounded-b-md rounded-t transition-all duration-500 ${
-                      isToday 
-                        ? 'bg-gradient-to-t from-blue-600 to-emerald-400 shadow-[0_0_12px_rgba(59,130,246,0.3)]' 
-                        : 'bg-gradient-to-t from-slate-700 to-blue-500/60'
+                <div className="w-full bg-slate-800/50 rounded-md h-16 flex items-end overflow-hidden">
+                  <div
+                    style={{ height: `${Math.max(barPct, 4)}%` }}
+                    className={`w-full rounded-b-sm rounded-t-sm transition-all duration-500 ${
+                      isToday
+                        ? 'bg-gradient-to-t from-indigo-600 to-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.4)]'
+                        : 'bg-gradient-to-t from-slate-700 to-indigo-500/40'
                     }`}
                   />
                 </div>
-
-                {/* X Axis labels */}
-                <span className={`text-[9px] font-bold ${isToday ? 'text-blue-400 font-extrabold' : 'text-slate-500'}`}>
+                <span className={`text-[8px] font-bold leading-none ${isToday ? 'text-indigo-400' : 'text-slate-600'}`}>
                   {day.dayName}
                 </span>
               </div>
             );
           })}
         </div>
+
+        <div className="text-center text-[9px] text-slate-500 font-mono">
+          Haf. Ort: {avgWeeklyKwh.toFixed(2)} kWh/gün
+        </div>
       </div>
 
-      {/* Favorite Devices list if exists */}
+      {/* Favorite devices */}
       {favoriteDevices.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Favori Cihazlarım</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {favoriteDevices.map((device) => {
-              const r = rooms.find(room => room.id === device.roomId);
-              const deviceKwh = consumptions
+        <div className="space-y-2.5">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Favori Cihazlarım</h3>
+            <button onClick={() => onNavigate('devices')} className="text-[9px] text-indigo-400 font-bold hover:underline flex items-center gap-0.5">
+              Tümü <ArrowRight size={10} />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            {favoriteDevices.slice(0, 4).map((device) => {
+              const r        = rooms.find(r => r.id === device.roomId);
+              const devKwh   = consumptions
                 .filter(c => c.deviceId === device.id && c.date.startsWith(currentMonthStr))
-                .reduce((sum, c) => sum + c.kwh, 0);
+                .reduce((s, c) => s + c.kwh, 0);
               return (
-                <div key={device.id} className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-3 flex items-center justify-between gap-2">
-                  <div className="min-w-0">
+                <button key={device.id} onClick={() => onNavigate('devices')}
+                  className="bg-slate-900/40 border border-slate-800 hover:border-indigo-500/20 rounded-2xl p-3 flex items-center justify-between gap-2 transition-all active:scale-[0.98]">
+                  <div className="min-w-0 text-left">
                     <div className="flex items-center gap-1">
-                      <Star size={10} className="text-amber-400 fill-amber-400" />
-                      <span className="text-xs font-bold text-white truncate">{device.name}</span>
+                      <Star size={9} className="text-amber-400 fill-amber-400 shrink-0" />
+                      <span className="text-[10px] font-bold text-white truncate">{device.name}</span>
                     </div>
-                    <span className="text-[9px] text-slate-400 truncate block">{r?.name || 'Oda'}</span>
+                    <span className="text-[8px] text-slate-500 block" style={{ color: r?.color }}>{r?.name || 'Oda'}</span>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-[11px] font-bold font-mono text-blue-400 block">{deviceKwh.toFixed(1)} kWh</span>
-                    <span className="text-[9px] text-slate-500 font-mono">{formatMoney(deviceKwh * settings.unitPrice)}</span>
+                    <span className="text-[10px] font-bold font-mono text-indigo-400 block">{devKwh.toFixed(1)}</span>
+                    <span className="text-[8px] text-slate-500">kWh</span>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
         </div>
       )}
 
-      {/* Latest records list */}
-      <div className="space-y-3">
+      {/* Latest consumptions */}
+      <div className="space-y-2.5">
         <div className="flex justify-between items-center">
-          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Son Tüketim Girişleri</h3>
-          <button onClick={() => onNavigate('devices')} className="text-xs text-blue-400 font-bold hover:underline flex items-center gap-1">
-            Tüm Kayıtlar <ArrowRight size={12} />
+          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Son Girişler</h3>
+          <button onClick={() => onNavigate('devices')} className="text-[9px] text-indigo-400 font-bold hover:underline flex items-center gap-0.5">
+            Tüm Cihazlar <ArrowRight size={10} />
           </button>
         </div>
 
         {sortedConsumptions.length > 0 ? (
-          <div className="space-y-2.5">
-            {sortedConsumptions.map((entry) => {
-              const d = devices.find(dev => dev.id === entry.deviceId);
-              const r = rooms.find(room => room.id === entry.roomId);
+          <div className="space-y-2">
+            {sortedConsumptions.map(entry => {
+              const d       = devices.find(dev => dev.id === entry.deviceId);
+              const r       = rooms.find(room => room.id === entry.roomId);
+              const devIcon = DEVICE_TYPES.find(dt => dt.id === d?.type)?.icon || 'Radio';
               return (
-                <div key={entry.id} className="flex justify-between items-center bg-slate-900/30 border border-slate-800/60 rounded-2xl p-4">
+                <button key={entry.id} onClick={() => onNavigate('devices')}
+                  className="w-full flex justify-between items-center bg-slate-900/30 border border-slate-800/60 hover:border-slate-700 rounded-2xl p-3.5 transition-all active:scale-[0.99] text-left">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-300 bg-slate-800/80 border border-slate-700/50">
-                      <IconRenderer name={d?.type ? DEVICE_TYPES.find(dt => dt.id === d.type)?.icon || 'Radio' : 'Radio'} size={18} className="text-blue-400" />
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-800/80 border border-slate-700/50 shrink-0">
+                      <IconRenderer name={devIcon} size={16} className="text-indigo-400" />
                     </div>
                     <div>
                       <h4 className="text-xs font-bold text-white">{d?.name || 'Cihaz'}</h4>
-                      <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5">
-                        <span className="font-semibold" style={{ color: r?.color || '#3b82f6' }}>{r?.name || 'Oda'}</span>
-                        <span>•</span>
+                      <p className="text-[9px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                        <span style={{ color: r?.color || '#6366f1' }}>{r?.name || 'Oda'}</span>
+                        <span>·</span>
                         <span>{new Date(entry.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <div className="text-xs font-bold font-mono text-white">{formatKwh(entry.kwh)}</div>
-                    <div className="text-[10px] text-slate-400 font-mono font-medium mt-0.5">{formatMoney(entry.totalCost)}</div>
+                    <div className="text-[9px] text-slate-400 font-mono mt-0.5">{formatMoney(entry.totalCost)}</div>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
         ) : (
-          <div className="bg-slate-900/20 border border-dashed border-slate-800 rounded-3xl p-8 text-center space-y-3">
-            <Zap size={24} className="text-slate-600 mx-auto animate-bounce" />
-            <p className="text-xs text-slate-400 max-w-xs mx-auto">
-              Henüz tüketim kaydı girilmemiş. Aşağıdaki hızlı işlem butonunu kullanarak ilk kaydı yapabilirsiniz.
-            </p>
+          <div className="border border-dashed border-slate-800 rounded-3xl p-8 text-center space-y-3">
+            <Zap size={24} className="text-slate-700 mx-auto" />
+            <p className="text-xs text-slate-400 max-w-xs mx-auto">Henüz tüketim kaydı yok. Aşağıdaki + butonunu kullanın.</p>
           </div>
         )}
       </div>
 
-      {/* Floating Action Button (FAB) for fast entry */}
-      <div className="fixed bottom-20 right-4 z-40 max-w-md mx-auto">
-        <button
-          onClick={onOpenAddConsumption}
-          className="w-14 h-14 bg-gradient-to-r from-blue-600 to-emerald-500 text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(59,130,246,0.4)] hover:scale-110 active:scale-95 transition-all focus:outline-none border border-blue-400/20"
-        >
-          <Plus size={28} />
+      {/* Bills shortcut */}
+      {bills.length > 0 && (
+        <button onClick={() => onNavigate('bills')}
+          className="w-full flex items-center justify-between bg-slate-900/30 border border-slate-800/60 hover:border-slate-700 rounded-2xl p-4 transition-all active:scale-[0.99]">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700/50 flex items-center justify-center">
+              <FileSpreadsheet size={16} className="text-amber-400" />
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-white">Elektrik Faturaları</p>
+              <p className="text-[9px] text-slate-400 mt-0.5">
+                {unpaidBills.length > 0
+                  ? `${unpaidBills.length} fatura ödeme bekliyor`
+                  : `${bills.length} fatura kaydedildi — hepsi ödendi`}
+              </p>
+            </div>
+          </div>
+          <ArrowRight size={14} className="text-slate-500" />
+        </button>
+      )}
+
+      {/* FAB */}
+      <div className="fixed bottom-20 right-4 z-40">
+        <button onClick={onOpenAddConsumption}
+          className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-indigo-500 text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(99,102,241,0.45)] hover:scale-110 active:scale-95 transition-all border border-indigo-400/20">
+          <Plus size={26} />
         </button>
       </div>
     </div>
   );
 };
-
-// Constant device mapping helper in scope
-const DEVICE_TYPES = [
-  { id: 'Televizyon', icon: 'Tv' },
-  { id: 'Buzdolabı', icon: 'Refrigerator' },
-  { id: 'Çamaşır Makinesi', icon: 'WashingMachine' },
-  { id: 'Bulaşık Makinesi', icon: 'Waves' },
-  { id: 'Klima', icon: 'Wind' },
-  { id: 'Bilgisayar', icon: 'Cpu' },
-  { id: 'Kombi', icon: 'Flame' },
-  { id: 'Fırın', icon: 'CookingPot' },
-  { id: 'Aydınlatma', icon: 'Lightbulb' },
-  { id: 'Şarj Cihazı', icon: 'PlugZap' },
-  { id: 'Akıllı Priz', icon: 'ToggleRight' },
-  { id: 'Diğer', icon: 'Radio' }
-];
