@@ -1,0 +1,6 @@
+{
+  "name": "Wattly",
+  "description": "Akıllı elektrik tüketimi ve fatura takip uygulaması. Odalarınızı, cihazlarınızı ve tüketimlerinizi kaydedip analiz edin.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
