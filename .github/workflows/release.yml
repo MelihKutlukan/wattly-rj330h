@@ -33,13 +33,22 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # Ubuntu runner'da Android SDK /usr/local/lib/android/sdk altında geliyor
+      - name: Configure Android SDK
+        run: |
+          ANDROID_SDK=/usr/local/lib/android/sdk
+          echo "ANDROID_HOME=$ANDROID_SDK" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK" >> $GITHUB_ENV
+          echo "$ANDROID_SDK/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_SDK/cmdline-tools/latest/bin" >> $GITHUB_PATH
 
-      - name: Install Android SDK 36 + Build Tools
+      - name: Install required SDK components
         run: |
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+          sdkmanager \
+            "platforms;android-36" \
+            "build-tools;35.0.0" \
+            "platform-tools"
 
       - name: Cache Gradle
         uses: actions/cache@v4
@@ -47,7 +56,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          key: gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gradle-
 
       - name: Cache debug keystore
@@ -72,7 +81,7 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: Create local.properties
-        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
+        run: echo "sdk.dir=/usr/local/lib/android/sdk" > android/local.properties
 
       - name: Copy web assets to Android
         run: |
@@ -81,9 +90,13 @@ jobs:
           cp capacitor.config.json android/app/src/main/assets/
 
       - name: Build debug APK
-        run: cd android && ./gradlew assembleDebug --no-daemon --stacktrace
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_SDK_ROOT }}
+        run: cd android && ./gradlew assembleDebug --no-daemon
+
+      # Hata varsa son 80 satırı step summary'e yaz
+      - name: Show build error details
+        if: failure()
+        run: |
+          cd android && ./gradlew assembleDebug --no-daemon --info 2>&1 | tail -80 >> $GITHUB_STEP_SUMMARY || true
 
       - name: Get version
         id: pkg
@@ -108,10 +121,7 @@ jobs:
           tag_name: v${{ steps.pkg.outputs.VERSION }}
           name: "Wattly v${{ steps.pkg.outputs.VERSION }}"
           body: |
-            🤖 Otomatik build
-            📦 Commit: ${{ github.sha }}
-            🕐 ${{ github.event.head_commit.timestamp }}
-
+            🤖 Otomatik build — ${{ github.sha }}
             **Kurulum:** APK'yı indirip telefona kur
           files: wattly-v${{ steps.pkg.outputs.VERSION }}.apk
         env:
