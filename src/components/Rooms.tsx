@@ -81,64 +81,6 @@ export const Rooms: React.FC<RoomsProps> = ({
     if (roomDetailId === selectedRoom.id) setRoomDetailId(null);
   };
 
-  const RoomModal = ({ onSubmit, title, onClose }: { onSubmit: (e: React.FormEvent) => void; title: string; onClose: () => void }) => (
-    <>
-      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div
-        className={`fixed bottom-0 inset-x-0 z-50 ${cardCls} rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[90vh] pb-safe`}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
-        </div>
-        <div className="px-5 pb-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-black text-stone-900 dark:text-stone-50">{title}</h2>
-            <button onClick={onClose} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1"><X size={20} /></button>
-          </div>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className={labelCls}>Oda Adı</label>
-              <input type="text" placeholder="Örn: Salon, Çocuk Odası" value={name} onChange={e => setName(e.target.value)} className={inputCls} />
-              {error && <p className="text-[10px] text-rose-500 font-semibold">{error}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <label className={`${labelCls} block`}>İkon Seçimi</label>
-              <div className="grid grid-cols-7 gap-2">
-                {ROOM_ICONS.map(ico => (
-                  <button key={ico.name} type="button" onClick={() => setIcon(ico.name)}
-                    className={`h-10 rounded-lg flex items-center justify-center border transition-all ${
-                      icon === ico.name
-                        ? 'bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-400'
-                        : 'bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-500 hover:border-stone-400 dark:hover:border-stone-600'
-                    }`} title={ico.label}>
-                    <IconRenderer name={ico.name} size={18} />
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className={`${labelCls} block`}>Oda Rengi</label>
-              <div className="grid grid-cols-7 gap-2">
-                {ROOM_COLORS.map(col => (
-                  <button key={col.hex} type="button" onClick={() => setColor(col.hex)}
-                    className={`h-10 rounded-lg flex items-center justify-center border transition-all relative ${
-                      color === col.hex ? 'border-stone-900 dark:border-white scale-105' : 'border-transparent'
-                    }`}
-                    style={{ backgroundColor: col.hex }}>
-                    {color === col.hex && <div className="absolute w-2 h-2 bg-white rounded-full shadow" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button type="submit" className="w-full h-11 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs transition-colors">
-              Kaydet
-            </button>
-          </form>
-        </div>
-      </div>
-    </>
-  );
 
   // Detay görünümü
   if (roomDetailId) {
@@ -312,8 +254,69 @@ export const Rooms: React.FC<RoomsProps> = ({
         </div>
       )}
 
-      {showAddModal  && <RoomModal onSubmit={handleSaveAdd}  title="Yeni Oda Ekle" onClose={() => setShowAddModal(false)} />}
-      {showEditModal && <RoomModal onSubmit={handleSaveEdit} title="Odayı Düzenle" onClose={() => setShowEditModal(false)} />}
+      {/* Add / Edit modal */}
+      {(showAddModal || showEditModal) && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={() => { setShowAddModal(false); setShowEditModal(false); }} />
+          <div
+            className={`fixed bottom-0 inset-x-0 z-50 ${cardCls} rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[90vh] pb-safe`}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
+            </div>
+            <div className="px-5 pb-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-black text-stone-900 dark:text-stone-50">
+                  {showAddModal ? 'Yeni Oda Ekle' : 'Odayı Düzenle'}
+                </h2>
+                <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
+                  className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1"><X size={20} /></button>
+              </div>
+              <form onSubmit={showAddModal ? handleSaveAdd : handleSaveEdit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className={labelCls}>Oda Adı</label>
+                  <input type="text" placeholder="Örn: Salon, Çocuk Odası" value={name} onChange={e => setName(e.target.value)} className={inputCls} />
+                  {error && <p className="text-[10px] text-rose-500 font-semibold">{error}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <label className={`${labelCls} block`}>İkon Seçimi</label>
+                  <div className="grid grid-cols-7 gap-2">
+                    {ROOM_ICONS.map(ico => (
+                      <button key={ico.name} type="button" onClick={() => setIcon(ico.name)}
+                        className={`h-10 rounded-lg flex items-center justify-center border transition-all ${
+                          icon === ico.name
+                            ? 'bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-400'
+                            : 'bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-500 hover:border-stone-400 dark:hover:border-stone-600'
+                        }`} title={ico.label}>
+                        <IconRenderer name={ico.name} size={18} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={`${labelCls} block`}>Oda Rengi</label>
+                  <div className="grid grid-cols-7 gap-2">
+                    {ROOM_COLORS.map(col => (
+                      <button key={col.hex} type="button" onClick={() => setColor(col.hex)}
+                        className={`h-10 rounded-lg flex items-center justify-center border transition-all relative ${
+                          color === col.hex ? 'border-stone-900 dark:border-white scale-105' : 'border-transparent'
+                        }`}
+                        style={{ backgroundColor: col.hex }}>
+                        {color === col.hex && <div className="absolute w-2 h-2 bg-white rounded-full shadow" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button type="submit" className="w-full h-11 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs transition-colors">
+                  Kaydet
+                </button>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
 
       {showDeleteModal && selectedRoom && (
         <>

@@ -324,95 +324,6 @@ export const Devices: React.FC<DevicesProps> = ({
 
   const inputCls = "w-full h-11 bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl px-4 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-amber-500";
 
-  // Bottom sheet device form
-  const DeviceForm = ({ onSubmit, title }: { onSubmit: (e: React.FormEvent) => void; title: string }) => (
-    <>
-      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in"
-        onClick={() => { setShowAddModal(false); setShowEditModal(false); }} />
-      <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
-        onClick={e => e.stopPropagation()}>
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
-        </div>
-        <div className="px-5 pb-6 space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-base font-black text-stone-900 dark:text-stone-50">{title}</h2>
-            <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
-              className="p-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400">
-              <X size={18} />
-            </button>
-          </div>
-
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Cihaz Adı</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Örn: Arçelik Klima"
-                className={inputCls} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Oda</label>
-                <select value={roomId} onChange={e => setRoomId(e.target.value)} className={inputCls}>
-                  {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Cihaz Türü</label>
-                <select value={type} onChange={e => { setType(e.target.value); setAverageWatt(String(DEVICE_TYPES.find(dt => dt.id === e.target.value)?.defaultWatt || '')); }}
-                  className={inputCls}>
-                  {DEVICE_TYPES.map(dt => <option key={dt.id} value={dt.id}>{dt.label}</option>)}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Akıllı Priz <span className="text-stone-400">(opt.)</span></label>
-                <input type="text" value={smartPlugName} onChange={e => setSmartPlugName(e.target.value)} placeholder="TUYA_1"
-                  className={inputCls} />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Ortalama Güç (W)</label>
-                <input type="number" value={averageWatt} onChange={e => setAverageWatt(e.target.value)} placeholder="Örn: 1500"
-                  className={inputCls + " font-mono"} />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Not</label>
-              <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Ek notlar..."
-                className="w-full h-14 bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl p-3 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-amber-500 resize-none" />
-            </div>
-
-            <button type="button" onClick={() => setShowCalc(v => !v)}
-              className="w-full h-9 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all">
-              <Calculator size={12} />
-              {showCalc ? 'Simülatörü Gizle' : 'Tüketim Simülatörü Aç'}
-              {showCalc ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            </button>
-
-            {showCalc && (
-              <DeviceCalculator
-                type={type} acBtu={acBtu} setAcBtu={setAcBtu}
-                acEnergyClass={acEnergyClass} setAcEnergyClass={setAcEnergyClass}
-                heaterPowerKw={heaterPowerKw} setHeaterPowerKw={setHeaterPowerKw}
-                currency={currency} unitPrice={defaultUnitPrice}
-                onApplyWatt={w => setAverageWatt(String(w))}
-              />
-            )}
-
-            {formError && <p className="text-[10px] text-rose-500 font-semibold">{formError}</p>}
-
-            <button type="submit"
-              className="w-full h-11 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs transition-colors shadow-[0_4px_12px_rgba(245,158,11,0.25)]">
-              Kaydet
-            </button>
-          </form>
-        </div>
-      </div>
-    </>
-  );
 
   // Cihaz Detay
   if (deviceDetailId) {
@@ -671,8 +582,89 @@ export const Devices: React.FC<DevicesProps> = ({
         </div>
       )}
 
-      {showAddModal  && <DeviceForm onSubmit={handleSaveAdd}  title="Yeni Cihaz Ekle" />}
-      {showEditModal && <DeviceForm onSubmit={handleSaveEdit} title="Cihazı Düzenle" />}
+      {/* Add / Edit modal */}
+      {(showAddModal || showEditModal) && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={() => { setShowAddModal(false); setShowEditModal(false); }} />
+          <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
+            </div>
+            <div className="px-5 pb-6 space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-base font-black text-stone-900 dark:text-stone-50">
+                  {showAddModal ? 'Yeni Cihaz Ekle' : 'Cihazı Düzenle'}
+                </h2>
+                <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
+                  className="p-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400">
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={showAddModal ? handleSaveAdd : handleSaveEdit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Cihaz Adı</label>
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Örn: Arçelik Klima"
+                    className={inputCls} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Oda</label>
+                    <select value={roomId} onChange={e => setRoomId(e.target.value)} className={inputCls}>
+                      {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Cihaz Türü</label>
+                    <select value={type} onChange={e => { setType(e.target.value); setAverageWatt(String(DEVICE_TYPES.find(dt => dt.id === e.target.value)?.defaultWatt || '')); }}
+                      className={inputCls}>
+                      {DEVICE_TYPES.map(dt => <option key={dt.id} value={dt.id}>{dt.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Akıllı Priz <span className="text-stone-400">(opt.)</span></label>
+                    <input type="text" value={smartPlugName} onChange={e => setSmartPlugName(e.target.value)} placeholder="TUYA_1"
+                      className={inputCls} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Ortalama Güç (W)</label>
+                    <input type="number" value={averageWatt} onChange={e => setAverageWatt(e.target.value)} placeholder="Örn: 1500"
+                      className={inputCls + " font-mono"} />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Not</label>
+                  <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Ek notlar..."
+                    className="w-full h-14 bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl p-3 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-amber-500 resize-none" />
+                </div>
+                <button type="button" onClick={() => setShowCalc(v => !v)}
+                  className="w-full h-9 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all">
+                  <Calculator size={12} />
+                  {showCalc ? 'Simülatörü Gizle' : 'Tüketim Simülatörü Aç'}
+                  {showCalc ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                </button>
+                {showCalc && (
+                  <DeviceCalculator
+                    type={type} acBtu={acBtu} setAcBtu={setAcBtu}
+                    acEnergyClass={acEnergyClass} setAcEnergyClass={setAcEnergyClass}
+                    heaterPowerKw={heaterPowerKw} setHeaterPowerKw={setHeaterPowerKw}
+                    currency={currency} unitPrice={defaultUnitPrice}
+                    onApplyWatt={w => setAverageWatt(String(w))}
+                  />
+                )}
+                {formError && <p className="text-[10px] text-rose-500 font-semibold">{formError}</p>}
+                <button type="submit"
+                  className="w-full h-11 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs transition-colors shadow-[0_4px_12px_rgba(245,158,11,0.25)]">
+                  Kaydet
+                </button>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Silme onayı — bottom sheet */}
       {showDeleteModal && selectedDevice && (

@@ -89,80 +89,6 @@ export const Bills: React.FC<BillsProps> = ({
 
   const cardCls = "bg-white dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800";
 
-  const BillForm = ({ onSubmit, title, onClose }: { onSubmit: (e: React.FormEvent) => void; title: string; onClose: () => void }) => (
-    <>
-      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div
-        className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
-        </div>
-        <div className="px-5 pb-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center">
-                <Coins size={16} className="text-amber-500" />
-              </div>
-              <h2 className="text-base font-black text-stone-900 dark:text-stone-50">{title}</h2>
-            </div>
-            <button onClick={onClose} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1">
-              <X size={20} />
-            </button>
-          </div>
-
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className={labelCls}>Dönem Ayı</label>
-                <select value={month} onChange={e => setMonth(parseInt(e.target.value))} className={selectCls}>
-                  {MONTHS_NAMES.map((name, i) => <option key={i+1} value={i+1}>{name}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className={labelCls}>Yıl</label>
-                <input type="number" value={year} onChange={e => setYear(parseInt(e.target.value))} className={inputCls} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className={labelCls}>Tüketim (kWh)</label>
-                <input type="number" step="0.01" placeholder="240.5" value={totalKwh}
-                  onChange={e => setTotalKwh(e.target.value)} className={inputCls} />
-              </div>
-              <div className="space-y-1.5">
-                <label className={labelCls}>Tutar ({currency})</label>
-                <input type="number" step="0.01" placeholder="781.60" value={totalAmount}
-                  onChange={e => setTotalAmount(e.target.value)} className={inputCls} />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className={labelCls}>Son Ödeme Tarihi</label>
-              <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className={inputCls} />
-            </div>
-            <div className="flex items-center gap-3 bg-stone-100 dark:bg-stone-800/40 p-3.5 border border-stone-200 dark:border-stone-800 rounded-2xl cursor-pointer"
-              onClick={() => setIsPaid(!isPaid)}>
-              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${isPaid ? 'bg-amber-500 border-amber-400' : 'border-stone-400 dark:border-stone-600'}`}>
-                {isPaid && <CheckCircle2 size={12} className="text-white" />}
-              </div>
-              <label className="text-xs font-bold text-stone-700 dark:text-stone-200 cursor-pointer select-none">Fatura Ödendi</label>
-            </div>
-            <div className="space-y-1.5">
-              <label className={labelCls}>Not</label>
-              <textarea placeholder="Fatura notları..." value={note} onChange={e => setNote(e.target.value)}
-                className="w-full h-14 bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl p-3 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-amber-500 resize-none" />
-            </div>
-            {error && <p className="text-[10px] text-rose-500 font-semibold">{error}</p>}
-            <button type="submit"
-              className="w-full h-11 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs transition-colors">
-              Kaydet
-            </button>
-          </form>
-        </div>
-      </div>
-    </>
-  );
 
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
@@ -280,9 +206,84 @@ export const Bills: React.FC<BillsProps> = ({
         </div>
       )}
 
-      {/* Modals */}
-      {showAddModal  && <BillForm onSubmit={handleSaveAdd}  title="Yeni Fatura" onClose={() => setShowAddModal(false)} />}
-      {showEditModal && <BillForm onSubmit={handleSaveEdit} title="Faturayı Düzenle" onClose={() => setShowEditModal(false)} />}
+      {/* Add / Edit modal */}
+      {(showAddModal || showEditModal) && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={() => { setShowAddModal(false); setShowEditModal(false); }} />
+          <div
+            className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
+            </div>
+            <div className="px-5 pb-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center">
+                    <Coins size={16} className="text-amber-500" />
+                  </div>
+                  <h2 className="text-base font-black text-stone-900 dark:text-stone-50">
+                    {showAddModal ? 'Yeni Fatura' : 'Faturayı Düzenle'}
+                  </h2>
+                </div>
+                <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
+                  className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1">
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={showAddModal ? handleSaveAdd : handleSaveEdit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Dönem Ayı</label>
+                    <select value={month} onChange={e => setMonth(parseInt(e.target.value))} className={selectCls}>
+                      {MONTHS_NAMES.map((name, i) => <option key={i+1} value={i+1}>{name}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Yıl</label>
+                    <input type="number" value={year} onChange={e => setYear(parseInt(e.target.value))} className={inputCls} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Tüketim (kWh)</label>
+                    <input type="number" step="0.01" placeholder="240.5" value={totalKwh}
+                      onChange={e => setTotalKwh(e.target.value)} className={inputCls} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Tutar ({currency})</label>
+                    <input type="number" step="0.01" placeholder="781.60" value={totalAmount}
+                      onChange={e => setTotalAmount(e.target.value)} className={inputCls} />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={labelCls}>Son Ödeme Tarihi</label>
+                  <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className={inputCls} />
+                </div>
+                <div className="flex items-center gap-3 bg-stone-100 dark:bg-stone-800/40 p-3.5 border border-stone-200 dark:border-stone-800 rounded-2xl cursor-pointer"
+                  onClick={() => setIsPaid(!isPaid)}>
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${isPaid ? 'bg-amber-500 border-amber-400' : 'border-stone-400 dark:border-stone-600'}`}>
+                    {isPaid && <CheckCircle2 size={12} className="text-white" />}
+                  </div>
+                  <label className="text-xs font-bold text-stone-700 dark:text-stone-200 cursor-pointer select-none">Fatura Ödendi</label>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={labelCls}>Not</label>
+                  <textarea placeholder="Fatura notları..." value={note} onChange={e => setNote(e.target.value)}
+                    className="w-full h-14 bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl p-3 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-amber-500 resize-none" />
+                </div>
+                {error && <p className="text-[10px] text-rose-500 font-semibold">{error}</p>}
+                <button type="submit"
+                  className="w-full h-11 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs transition-colors">
+                  Kaydet
+                </button>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
 
       {showDeleteModal && selectedBill && (
         <>

@@ -125,101 +125,6 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
 
   const closeModal = () => { setShowAddModal(false); setShowEditModal(false); };
 
-  // Bottom sheet modal — kaydırılabilir, klavye açıldığında ekran aşağı kayar
-  const ModalForm = ({ onSubmit, title }: { onSubmit: (e: React.FormEvent) => void; title: string }) => (
-    <>
-      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={closeModal} />
-      <div
-        className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Handle bar */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
-        </div>
-
-        <div className="px-5 pb-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-teal-500/10 border border-teal-500/20 rounded-xl flex items-center justify-center">
-                <Droplets size={18} className="text-teal-500" />
-              </div>
-              <h2 className="text-base font-black text-stone-900 dark:text-stone-50">{title}</h2>
-            </div>
-            <button onClick={closeModal} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1">
-              <X size={20} />
-            </button>
-          </div>
-
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className={labelCls}>Dönem Ayı</label>
-                <select value={month} onChange={e => setMonth(+e.target.value)} className={selectCls}>
-                  {MONTHS.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className={labelCls}>Yıl</label>
-                <input type="number" value={year} onChange={e => setYear(+e.target.value)} className={inputCls} />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className={labelCls}>Tüketim (m³)</label>
-                <input type="number" step="0.01" placeholder="8.5" value={cubicMeters}
-                  onChange={e => setCubicMeters(e.target.value)} className={inputCls} />
-              </div>
-              <div className="space-y-1.5">
-                <label className={labelCls}>Tutar ({currency})</label>
-                <input type="number" step="0.01" placeholder="340.00" value={totalAmount}
-                  onChange={e => setTotalAmount(e.target.value)} className={inputCls} />
-              </div>
-            </div>
-
-            {cubicMeters && totalAmount && parseFloat(cubicMeters) > 0 && parseFloat(totalAmount) > 0 && (
-              <div className="bg-teal-500/10 border border-teal-500/20 rounded-2xl p-3 text-center">
-                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-wider block">Birim Fiyat</span>
-                <span className="text-xl font-black text-stone-900 dark:text-stone-50 font-mono">
-                  {(parseFloat(totalAmount) / parseFloat(cubicMeters)).toFixed(2)} {currency}/m³
-                </span>
-              </div>
-            )}
-
-            <div className="space-y-1.5">
-              <label className={labelCls}>Son Ödeme Tarihi</label>
-              <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className={inputCls} />
-            </div>
-
-            <div
-              className="flex items-center gap-3 bg-stone-100 dark:bg-stone-800/40 p-3.5 border border-stone-200 dark:border-stone-800 rounded-2xl cursor-pointer"
-              onClick={() => setIsPaid(!isPaid)}
-            >
-              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${isPaid ? 'bg-teal-600 border-teal-500' : 'border-stone-400 dark:border-stone-600'}`}>
-                {isPaid && <CheckCircle2 size={12} className="text-white" />}
-              </div>
-              <label className="text-xs font-bold text-stone-700 dark:text-stone-200 cursor-pointer select-none">Fatura Ödendi</label>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className={labelCls}>Not (Opsiyonel)</label>
-              <textarea placeholder="Fatura notları..." value={note} onChange={e => setNote(e.target.value)}
-                className="w-full h-14 bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl p-3 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-teal-500 resize-none" />
-            </div>
-
-            {error && <p className="text-[10px] text-rose-500 font-semibold">{error}</p>}
-
-            <button type="submit"
-              className="w-full h-11 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl text-xs transition-colors shadow-[0_4px_12px_rgba(20,184,166,0.25)]">
-              Kaydet
-            </button>
-          </form>
-        </div>
-      </div>
-    </>
-  );
-
   const cardCls = "bg-white dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 space-y-1 transition-all cursor-default";
 
   return (
@@ -379,9 +284,92 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
         </div>
       )}
 
-      {/* Modaller */}
-      {showAddModal  && <ModalForm onSubmit={handleSaveAdd}  title="Yeni Su Faturası" />}
-      {showEditModal && <ModalForm onSubmit={handleSaveEdit} title="Su Faturasını Düzenle" />}
+      {/* Add / Edit modal — inline JSX (sub-component içinde tanımlamak her render'da unmount eder) */}
+      {(showAddModal || showEditModal) && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
+          <div
+            className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
+            </div>
+            <div className="px-5 pb-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 bg-teal-500/10 border border-teal-500/20 rounded-xl flex items-center justify-center">
+                    <Droplets size={18} className="text-teal-500" />
+                  </div>
+                  <h2 className="text-base font-black text-stone-900 dark:text-stone-50">
+                    {showAddModal ? 'Yeni Su Faturası' : 'Su Faturasını Düzenle'}
+                  </h2>
+                </div>
+                <button onClick={closeModal} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1">
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={showAddModal ? handleSaveAdd : handleSaveEdit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Dönem Ayı</label>
+                    <select value={month} onChange={e => setMonth(+e.target.value)} className={selectCls}>
+                      {MONTHS.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Yıl</label>
+                    <input type="number" value={year} onChange={e => setYear(+e.target.value)} className={inputCls} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Tüketim (m³)</label>
+                    <input type="number" step="0.01" placeholder="8.5" value={cubicMeters}
+                      onChange={e => setCubicMeters(e.target.value)} className={inputCls} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Tutar ({currency})</label>
+                    <input type="number" step="0.01" placeholder="340.00" value={totalAmount}
+                      onChange={e => setTotalAmount(e.target.value)} className={inputCls} />
+                  </div>
+                </div>
+                {cubicMeters && totalAmount && parseFloat(cubicMeters) > 0 && parseFloat(totalAmount) > 0 && (
+                  <div className="bg-teal-500/10 border border-teal-500/20 rounded-2xl p-3 text-center">
+                    <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-wider block">Birim Fiyat</span>
+                    <span className="text-xl font-black text-stone-900 dark:text-stone-50 font-mono">
+                      {(parseFloat(totalAmount) / parseFloat(cubicMeters)).toFixed(2)} {currency}/m³
+                    </span>
+                  </div>
+                )}
+                <div className="space-y-1.5">
+                  <label className={labelCls}>Son Ödeme Tarihi</label>
+                  <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className={inputCls} />
+                </div>
+                <div
+                  className="flex items-center gap-3 bg-stone-100 dark:bg-stone-800/40 p-3.5 border border-stone-200 dark:border-stone-800 rounded-2xl cursor-pointer"
+                  onClick={() => setIsPaid(!isPaid)}
+                >
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${isPaid ? 'bg-teal-600 border-teal-500' : 'border-stone-400 dark:border-stone-600'}`}>
+                    {isPaid && <CheckCircle2 size={12} className="text-white" />}
+                  </div>
+                  <label className="text-xs font-bold text-stone-700 dark:text-stone-200 cursor-pointer select-none">Fatura Ödendi</label>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={labelCls}>Not (Opsiyonel)</label>
+                  <textarea placeholder="Fatura notları..." value={note} onChange={e => setNote(e.target.value)}
+                    className="w-full h-14 bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl p-3 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-teal-500 resize-none" />
+                </div>
+                {error && <p className="text-[10px] text-rose-500 font-semibold">{error}</p>}
+                <button type="submit"
+                  className="w-full h-11 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl text-xs transition-colors shadow-[0_4px_12px_rgba(20,184,166,0.25)]">
+                  Kaydet
+                </button>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
 
       {showDeleteModal && selected && (
         <>
