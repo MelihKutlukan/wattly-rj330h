@@ -212,28 +212,28 @@ export const Bills: React.FC<BillsProps> = ({
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
             onClick={() => { setShowAddModal(false); setShowEditModal(false); }} />
           <div
-            className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up overflow-y-auto max-h-[92vh] pb-safe"
+            className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up flex flex-col max-h-[92vh]"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-center pt-3 pb-1">
+            <div className="flex justify-center pt-3 pb-1 shrink-0">
               <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
             </div>
-            <div className="px-5 pb-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center">
-                    <Coins size={16} className="text-amber-500" />
-                  </div>
-                  <h2 className="text-base font-black text-stone-900 dark:text-stone-50">
-                    {showAddModal ? 'Yeni Fatura' : 'Faturayı Düzenle'}
-                  </h2>
+            <div className="px-5 pb-3 shrink-0 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center">
+                  <Coins size={16} className="text-amber-500" />
                 </div>
-                <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
-                  className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1">
-                  <X size={20} />
-                </button>
+                <h2 className="text-base font-black text-stone-900 dark:text-stone-50">
+                  {showAddModal ? 'Yeni Fatura' : 'Faturayı Düzenle'}
+                </h2>
               </div>
-              <form onSubmit={showAddModal ? handleSaveAdd : handleSaveEdit} className="space-y-4">
+              <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
+                className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={showAddModal ? handleSaveAdd : handleSaveEdit} className="flex flex-col flex-1 min-h-0">
+              <div className="overflow-y-auto flex-1 px-5 space-y-4 pb-2">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className={labelCls}>Dönem Ayı</label>
@@ -275,12 +275,14 @@ export const Bills: React.FC<BillsProps> = ({
                     className="w-full h-14 bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl p-3 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-amber-500 resize-none" />
                 </div>
                 {error && <p className="text-[10px] text-rose-500 font-semibold">{error}</p>}
+              </div>
+              <div className="px-5 pt-3 pb-safe border-t border-stone-200 dark:border-stone-800 shrink-0 bg-white dark:bg-stone-900">
                 <button type="submit"
                   className="w-full h-11 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs transition-colors">
                   Kaydet
                 </button>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
         </>
       )}
