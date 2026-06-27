@@ -212,13 +212,13 @@ export const Bills: React.FC<BillsProps> = ({
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
             onClick={() => { setShowAddModal(false); setShowEditModal(false); }} />
           <div
-            className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up flex flex-col max-h-[92vh]"
+            className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
             </div>
-            <div className="px-5 pb-3 shrink-0 flex items-center justify-between">
+            <div className="px-5 pb-3 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center">
                   <Coins size={16} className="text-amber-500" />
@@ -232,8 +232,8 @@ export const Bills: React.FC<BillsProps> = ({
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={showAddModal ? handleSaveAdd : handleSaveEdit} className="flex flex-col flex-1 min-h-0">
-              <div className="overflow-y-auto flex-1 px-5 space-y-4 pb-2">
+            <form onSubmit={showAddModal ? handleSaveAdd : handleSaveEdit}>
+              <div className="overflow-y-auto px-5 space-y-4 pb-2" style={{maxHeight:'calc(100dvh - 280px)'}}>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className={labelCls}>Dönem Ayı</label>
@@ -276,7 +276,7 @@ export const Bills: React.FC<BillsProps> = ({
                 </div>
                 {error && <p className="text-[10px] text-rose-500 font-semibold">{error}</p>}
               </div>
-              <div className="px-5 pt-3 pb-safe border-t border-stone-200 dark:border-stone-800 shrink-0 bg-white dark:bg-stone-900">
+              <div className="px-5 pt-3 pb-safe border-t border-stone-200 dark:border-stone-800">
                 <button type="submit"
                   className="w-full h-11 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs transition-colors">
                   Kaydet

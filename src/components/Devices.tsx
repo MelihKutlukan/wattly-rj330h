@@ -421,19 +421,19 @@ export const Devices: React.FC<DevicesProps> = ({
         {editCons && (
           <>
             <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setEditCons(null)} />
-            <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up flex flex-col max-h-[92vh]"
+            <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up"
               onClick={e => e.stopPropagation()}>
-              <div className="flex justify-center pt-3 pb-1 shrink-0">
+              <div className="flex justify-center pt-3 pb-1">
                 <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
               </div>
-              <div className="px-5 pb-3 shrink-0 flex justify-between items-center">
+              <div className="px-5 pb-3 flex justify-between items-center">
                 <h2 className="text-base font-black text-stone-900 dark:text-stone-50">Tüketim Kaydını Düzenle</h2>
                 <button onClick={() => setEditCons(null)} className="p-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-500">
                   <X size={18} />
                 </button>
               </div>
-              <form onSubmit={handleSaveEditCons} className="flex flex-col flex-1 min-h-0">
-                <div className="overflow-y-auto flex-1 px-5 space-y-4 pb-2">
+              <form onSubmit={handleSaveEditCons}>
+                <div className="overflow-y-auto px-5 space-y-4 pb-2" style={{maxHeight:'calc(100dvh - 280px)'}}>
                   <div className="space-y-1.5">
                     <label className="text-xs text-stone-500 dark:text-stone-400 font-bold flex items-center gap-1">
                       <Calendar size={11} className="text-amber-500" /> Tarih
@@ -470,7 +470,7 @@ export const Devices: React.FC<DevicesProps> = ({
                       className={inputCls} />
                   </div>
                 </div>
-                <div className="px-5 pt-3 pb-safe border-t border-stone-200 dark:border-stone-800 shrink-0 bg-white dark:bg-stone-900">
+                <div className="px-5 pt-3 pb-safe border-t border-stone-200 dark:border-stone-800">
                   <div className="grid grid-cols-2 gap-3">
                     <button type="button" onClick={() => setEditCons(null)}
                       className="h-11 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 font-bold rounded-xl text-xs">
@@ -589,12 +589,12 @@ export const Devices: React.FC<DevicesProps> = ({
         <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
             onClick={() => { setShowAddModal(false); setShowEditModal(false); }} />
-          <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up flex flex-col max-h-[92vh]"
+          <div className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl w-full max-w-md mx-auto animate-slide-up"
             onClick={e => e.stopPropagation()}>
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 bg-stone-300 dark:bg-stone-600 rounded-full" />
             </div>
-            <div className="px-5 pb-3 shrink-0 flex justify-between items-center">
+            <div className="px-5 pb-3 flex justify-between items-center">
               <h2 className="text-base font-black text-stone-900 dark:text-stone-50">
                 {showAddModal ? 'Yeni Cihaz Ekle' : 'Cihazı Düzenle'}
               </h2>
@@ -603,8 +603,8 @@ export const Devices: React.FC<DevicesProps> = ({
                 <X size={18} />
               </button>
             </div>
-            <form onSubmit={showAddModal ? handleSaveAdd : handleSaveEdit} className="flex flex-col flex-1 min-h-0">
-              <div className="overflow-y-auto flex-1 px-5 space-y-4 pb-2">
+            <form onSubmit={showAddModal ? handleSaveAdd : handleSaveEdit}>
+              <div className="overflow-y-auto px-5 space-y-4 pb-2" style={{maxHeight:'calc(100dvh - 280px)'}}>
                 <div className="space-y-1.5">
                   <label className="text-xs text-stone-500 dark:text-stone-400 font-bold">Cihaz Adı</label>
                   <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Örn: Arçelik Klima"
@@ -659,7 +659,7 @@ export const Devices: React.FC<DevicesProps> = ({
                 )}
                 {formError && <p className="text-[10px] text-rose-500 font-semibold">{formError}</p>}
               </div>
-              <div className="px-5 pt-3 pb-safe border-t border-stone-200 dark:border-stone-800 shrink-0 bg-white dark:bg-stone-900">
+              <div className="px-5 pt-3 pb-safe border-t border-stone-200 dark:border-stone-800">
                 <button type="submit"
                   className="w-full h-11 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl text-xs transition-colors shadow-[0_4px_12px_rgba(245,158,11,0.25)]">
                   Kaydet
